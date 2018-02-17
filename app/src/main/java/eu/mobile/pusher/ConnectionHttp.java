@@ -1,18 +1,16 @@
 package eu.mobile.pusher;
 
 import android.os.AsyncTask;
+import android.util.Log;
+import android.view.View;
 
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 
 /**
  * Created by Stoycho Petrov on 17.2.2018 г..
@@ -20,10 +18,21 @@ import java.net.URL;
 
 public class ConnectionHttp extends AsyncTask<String, Void, String> {
 
-    private JSONObject mPostData;
+    private String  mUserName;
+    private String  mPassword;
+    private View    mProgress;
 
-    public ConnectionHttp(JSONObject postData){
-        mPostData = postData;
+    public ConnectionHttp(String username, String password){
+        mUserName   = username;
+        mPassword   = password;
+    }
+
+    @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+
+        if(mProgress != null)
+            mProgress.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -39,11 +48,12 @@ public class ConnectionHttp extends AsyncTask<String, Void, String> {
             urlConnectionGetChanges.setRequestProperty("Accept", "application/json");
             urlConnectionGetChanges.setRequestMethod("POST");
 
-            if (mPostData != null) {
-                OutputStreamWriter writer = new OutputStreamWriter(urlConnectionGetChanges.getOutputStream());
-                writer.write(mPostData.toString());
-                writer.flush();
-            }
+            String data = URLEncoder.encode("_username", "UTF-8") + "=" + URLEncoder.encode(mUserName, "UTF-8");
+            data += "&" + URLEncoder.encode("_password", "UTF-8") + "=" + URLEncoder.encode(mPassword, "UTF-8");
+
+            OutputStreamWriter writer = new OutputStreamWriter(urlConnectionGetChanges.getOutputStream());
+            writer.write(data);
+            writer.flush();
 
             int statusCode = urlConnectionGetChanges.getResponseCode();
 
@@ -58,6 +68,8 @@ public class ConnectionHttp extends AsyncTask<String, Void, String> {
             }
             urlConnectionGetChanges.disconnect();
 
+            Log.d("login", dataGetChanges.toString());
+
             return dataGetChanges.toString();
 
         } catch (IOException e) {
@@ -70,5 +82,16 @@ public class ConnectionHttp extends AsyncTask<String, Void, String> {
     @Override
     protected void onPostExecute(String s) {
         super.onPostExecute(s);
+
+        if(mProgress != null)
+            mProgress.setVisibility(View.GONE);
+    }
+
+    public View getmProgress() {
+        return mProgress;
+    }
+
+    public void setmProgress(View mProgress) {
+        this.mProgress = mProgress;
     }
 }

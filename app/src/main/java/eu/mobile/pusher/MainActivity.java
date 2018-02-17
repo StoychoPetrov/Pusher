@@ -7,7 +7,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.pusher.android.PusherAndroid;
 import com.pusher.android.PusherAndroidOptions;
-import com.pusher.android.notifications.gcm.GCMPushNotificationReceivedListener;
 import com.pusher.android.notifications.tokens.PushNotificationRegistrationListener;
 import com.pusher.client.channel.Channel;
 import com.pusher.client.channel.SubscriptionEventListener;
@@ -19,13 +18,6 @@ public class MainActivity extends AppCompatActivity implements PushNotificationR
 
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
 
-    private GCMPushNotificationReceivedListener mListener = new GCMPushNotificationReceivedListener() {
-        @Override
-        public void onMessageReceived(String from, Bundle data) {
-
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,50 +28,34 @@ public class MainActivity extends AppCompatActivity implements PushNotificationR
             jsonObject.put("_username", "test");
             jsonObject.put("_password", "test");
 
-            ConnectionHttp connectionHttp = new ConnectionHttp(jsonObject);
-            connectionHttp.execute("https://fashionpoint.bg/profile/login_check");
+            ConnectionHttp connectionHttp = new ConnectionHttp("test", "test");
+            connectionHttp.setmProgress(findViewById(R.id.progress_layout));
+            connectionHttp.execute("http://fashionpoint.bg/profile/login_check");
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-//        try {
-            if (playServicesAvailable()) {
+        connectPusherAndSubscribe();
+    }
 
-                PusherAndroidOptions options = new PusherAndroidOptions();
-                options.setCluster("eu");
+    private void connectPusherAndSubscribe(){
+        if (playServicesAvailable()) {
 
-                PusherAndroid pusher = new PusherAndroid("de1a93d7dd48c7a930fe", options);
-                pusher.connect();
+            PusherAndroidOptions options = new PusherAndroidOptions();
+            options.setCluster("eu");
 
-                Channel channel = pusher.subscribe("my-channel");
+            PusherAndroid pusher = new PusherAndroid("de1a93d7dd48c7a930fe", options);
+            pusher.connect();
 
-                channel.bind("my-event", new SubscriptionEventListener() {
-                    @Override
-                    public void onEvent(String channelName, String eventName, final String data) {
-                        System.out.println(data);
-                    }
-                });
-//                PushNotificationRegistration nativePusher = pusher.nativePusher();
-//                String defaultSenderId = getString(R.string.gcm_defaultSenderId); // fetched from your google-services.json
-//
-//                nativePusher.registerGCM(this, defaultSenderId, this);
-//
-//                nativePusher.subscribe("pukanki");
-//
-//                nativePusher.setGCMListener(new GCMPushNotificationReceivedListener() {
-//                    @Override
-//                    public void onMessageReceived(String from, Bundle data) {
-//                        Log.d("notification", data.getString("message"));
-//                    }
-//                });
+            Channel channel = pusher.subscribe("gosho");
 
-
-            } else {
-                // ... log error, or handle gracefully
-            }
-//        } catch (ManifestValidator.InvalidManifestException e) {
-//            e.printStackTrace();
-//        }
+            channel.bind("a", new SubscriptionEventListener() {
+                @Override
+                public void onEvent(String channelName, String eventName, final String data) {
+                    System.out.println(data);
+                }
+            });
+        }
     }
 
     private boolean playServicesAvailable() {
