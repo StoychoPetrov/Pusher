@@ -32,6 +32,8 @@ dependencies {
     compile 'com.pusher:pusher-websocket-android:0.7.0'
     compile 'com.pusher:pusher-java-client:1.6.0'
     compile "com.google.android.gms:play-services-gcm:11.8.0"
+    compile 'com.android.support:design:26.1.0'
+
     testCompile 'junit:junit:4.12'
 }
 

@@ -31,6 +31,19 @@
 
     </LinearLayout>
 
+    <Button
+        android:id                          ="@+id/log_in"
+        android:layout_width                ="match_parent"
+        android:layout_height               ="wrap_content"
+        android:layout_alignParentBottom    ="true"
+        android:paddingRight                ="10dp"
+        android:paddingLeft                 ="10dp"
+        android:background                  ="@color/colorPrimary"
+        android:gravity                     ="end|center_vertical"
+        android:textColor                   ="@android:color/white"
+        android:text                        ="@string/login"
+        android:textSize                    ="20sp"/>
+
     <RelativeLayout
         android:id              ="@+id/progress_layout"
         android:layout_width    ="match_parent"

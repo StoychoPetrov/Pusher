@@ -2,43 +2,58 @@ package eu.mobile.pusher;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.pusher.android.PusherAndroid;
 import com.pusher.android.PusherAndroidOptions;
-import com.pusher.android.notifications.tokens.PushNotificationRegistrationListener;
 import com.pusher.client.channel.Channel;
 import com.pusher.client.channel.SubscriptionEventListener;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements PushNotificationRegistrationListener{
+public class MainActivity extends AppCompatActivity implements ConnectionHttp.OnAnswerReceived, View.OnClickListener {
 
-    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private static final int    PLAY_SERVICES_RESOLUTION_REQUEST    = 9000;
+    private static final String STATUS_KEY                          = "status";
+    private static final String ID_KEY                              = "id";
+
+    private Button      mLoginBtn;
+    private EditText    mUsernameEdt;
+    private EditText    mPasswordEdt;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("_username", "test");
-            jsonObject.put("_password", "test");
-
-            ConnectionHttp connectionHttp = new ConnectionHttp("test", "test");
-            connectionHttp.setmProgress(findViewById(R.id.progress_layout));
-            connectionHttp.execute("http://fashionpoint.bg/profile/login_check");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        connectPusherAndSubscribe();
+        initUI();
+        setListerners();
     }
 
-    private void connectPusherAndSubscribe(){
+    private void initUI(){
+        mLoginBtn       = (Button)      findViewById(R.id.log_in);
+        mUsernameEdt    = (EditText)    findViewById(R.id.user_name_edt);
+        mPasswordEdt    = (EditText)    findViewById(R.id.password_edt);
+    }
+
+    private void setListerners(){
+        mLoginBtn.setOnClickListener(this);
+    }
+
+    private void login(){
+        ConnectionHttp connectionHttp = new ConnectionHttp(mUsernameEdt.getText().toString(), mPasswordEdt.getText().toString());
+        connectionHttp.setmProgress(findViewById(R.id.progress_layout));
+        connectionHttp.setmListener(this);
+        connectionHttp.execute("http://fashionpoint.bg/profile/login_check");
+    }
+
+    private void connectPusherAndSubscribe(String channelName, String eventName){
         if (playServicesAvailable()) {
 
             PusherAndroidOptions options = new PusherAndroidOptions();
@@ -47,9 +62,9 @@ public class MainActivity extends AppCompatActivity implements PushNotificationR
             PusherAndroid pusher = new PusherAndroid("de1a93d7dd48c7a930fe", options);
             pusher.connect();
 
-            Channel channel = pusher.subscribe("gosho");
+            Channel channel = pusher.subscribe(channelName);
 
-            channel.bind("a", new SubscriptionEventListener() {
+            channel.bind(eventName, new SubscriptionEventListener() {
                 @Override
                 public void onEvent(String channelName, String eventName, final String data) {
                     System.out.println(data);
@@ -74,12 +89,27 @@ public class MainActivity extends AppCompatActivity implements PushNotificationR
     }
 
     @Override
-    public void onSuccessfulRegistration() {
+    public void onAnswerReceived(JSONObject answer) {
+        try {
+            if(answer.getBoolean(STATUS_KEY)){
+                Toast.makeText(this, getString(R.string.you_are_logged_successful), Toast.LENGTH_SHORT).show();
+                connectPusherAndSubscribe("mobile_" + answer.getInt(ID_KEY), "mobile_" + answer.getInt(ID_KEY));
+            }
+            else
+                Toast.makeText(this, getString(R.string.wrong_email_or_password), Toast.LENGTH_SHORT).show();
 
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public void onFailedRegistration(int statusCode, String response) {
-
+    public void onClick(View view) {
+        if(view.getId() == mLoginBtn.getId()) {
+            if(!mUsernameEdt.getText().toString().isEmpty() && !mPasswordEdt.getText().toString().isEmpty())
+                login();
+            else
+                Toast.makeText(this, getString(R.string.enter_username_and_password), Toast.LENGTH_SHORT).show();
+        }
     }
 }

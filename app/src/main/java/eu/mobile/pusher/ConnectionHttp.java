@@ -4,6 +4,9 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,9 +21,14 @@ import java.net.URLEncoder;
 
 public class ConnectionHttp extends AsyncTask<String, Void, String> {
 
-    private String  mUserName;
-    private String  mPassword;
-    private View    mProgress;
+    private String              mUserName;
+    private String              mPassword;
+    private View                mProgress;
+    private OnAnswerReceived    mListener;
+
+    public interface OnAnswerReceived {
+        void onAnswerReceived(JSONObject answer);
+    }
 
     public ConnectionHttp(String username, String password){
         mUserName   = username;
@@ -85,6 +93,13 @@ public class ConnectionHttp extends AsyncTask<String, Void, String> {
 
         if(mProgress != null)
             mProgress.setVisibility(View.GONE);
+
+        try {
+            if(mListener != null)
+                mListener.onAnswerReceived(new JSONObject(s));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public View getmProgress() {
@@ -93,5 +108,13 @@ public class ConnectionHttp extends AsyncTask<String, Void, String> {
 
     public void setmProgress(View mProgress) {
         this.mProgress = mProgress;
+    }
+
+    public OnAnswerReceived getmListener() {
+        return mListener;
+    }
+
+    public void setmListener(OnAnswerReceived mListener) {
+        this.mListener = mListener;
     }
 }
