@@ -1,18 +1,22 @@
 package eu.mobile.pusher;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.pusher.android.PusherAndroid;
-import com.pusher.android.PusherAndroidOptions;
-import com.pusher.client.channel.Channel;
-import com.pusher.client.channel.SubscriptionEventListener;
+import com.google.firebase.messaging.RemoteMessage;
+import com.pusher.pushnotifications.PushNotificationReceivedListener;
+import com.pusher.pushnotifications.PushNotifications;
 
 import org.json.JSONObject;
 
@@ -54,38 +58,41 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
     }
 
     private void connectPusherAndSubscribe(String channelName, String eventName){
-        if (playServicesAvailable()) {
+        PushNotifications.start(getApplicationContext(), "f1373bb0-1b5f-4939-8a25-5d730bd0037a");
 
-            PusherAndroidOptions options = new PusherAndroidOptions();
-            options.setCluster("eu");
-
-            PusherAndroid pusher = new PusherAndroid("de1a93d7dd48c7a930fe", options);
-            pusher.connect();
-
-            Channel channel = pusher.subscribe(channelName);
-
-            channel.bind(eventName, new SubscriptionEventListener() {
-                @Override
-                public void onEvent(String channelName, String eventName, final String data) {
-                    System.out.println(data);
-                }
-            });
-        }
+        PushNotifications.subscribe("hello");
+        PushNotifications.setOnMessageReceivedListener(new PushNotificationReceivedListener() {
+            @Override
+            public void onMessageReceived(RemoteMessage remoteMessage) {
+                Log.i("hello", "hello");
+            }
+        });
     }
 
-    private boolean playServicesAvailable() {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (apiAvailability.isUserResolvableError(resultCode)) {
-                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                finish();
+    private void showPush(JSONObject data){
+        try {
+            String title    = data.getString("title");
+            String url      = data.getString("url");
+
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(browserIntent);
+
+            PendingIntent contentIntent = PendingIntent.getActivity(this, 0, browserIntent, 0);
+
+            Notification notification = new Notification.Builder(this)
+                    .setContentTitle(title)
+                    .setContentIntent(contentIntent)
+                    .setSmallIcon(R.mipmap.ic_launcher).build();
+
+            NotificationManager notifyManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+            if(notifyManager != null) {
+                notifyManager.notify(0, notification);
             }
 
-            return false;
+        }catch (Exception e){
+            e.printStackTrace();
         }
-        return true;
     }
 
     @Override
