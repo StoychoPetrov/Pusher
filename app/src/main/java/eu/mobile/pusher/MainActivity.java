@@ -15,6 +15,11 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.firebase.messaging.RemoteMessage;
+import com.pusher.android.PusherAndroid;
+import com.pusher.android.notifications.ManifestValidator;
+import com.pusher.android.notifications.PushNotificationRegistration;
+import com.pusher.android.notifications.fcm.FCMPushNotificationReceivedListener;
+import com.pusher.android.notifications.tokens.PushNotificationRegistrationListener;
 import com.pusher.pushnotifications.PushNotificationReceivedListener;
 import com.pusher.pushnotifications.PushNotifications;
 
@@ -38,6 +43,8 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
 
         initUI();
         setListerners();
+
+        connectPusherAndSubscribe("mobile_" + 4, "mobile_" + 4);
     }
 
     private void initUI(){
@@ -58,15 +65,43 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
     }
 
     private void connectPusherAndSubscribe(String channelName, String eventName){
-        PushNotifications.start(getApplicationContext(), "f1373bb0-1b5f-4939-8a25-5d730bd0037a");
 
-        PushNotifications.subscribe("hello");
-        PushNotifications.setOnMessageReceivedListener(new PushNotificationReceivedListener() {
+        PusherAndroid pusher = new PusherAndroid("f1373bb0-1b5f-4939-8a25-5d730bd0037a");
+        PushNotificationRegistration nativePusher = pusher.nativePusher();
+        try {
+            nativePusher.registerFCM(this, new PushNotificationRegistrationListener() {
+                @Override
+                public void onSuccessfulRegistration() {
+                    Log.d("hello", "success");
+                }
+
+                @Override
+                public void onFailedRegistration(int statusCode, String response) {
+                    Log.d("hello", "failed");
+                }
+            });
+        } catch (ManifestValidator.InvalidManifestException e) {
+            e.printStackTrace();
+        }
+
+        PushNotificationRegistration push = pusher.nativePusher();
+        push.subscribe("hello");
+
+        push.setFCMListener(new FCMPushNotificationReceivedListener() {
             @Override
             public void onMessageReceived(RemoteMessage remoteMessage) {
-                Log.i("hello", "hello");
+                Log.d("hello", "hello");
             }
         });
+//        PushNotifications.start(getApplicationContext(), "f1373bb0-1b5f-4939-8a25-5d730bd0037a");
+//
+//        PushNotifications.subscribe("hello");
+//        PushNotifications.setOnMessageReceivedListener(new PushNotificationReceivedListener() {
+//            @Override
+//            public void onMessageReceived(RemoteMessage remoteMessage) {
+//                Log.i("hello", "hello");
+//            }
+//        });
     }
 
     private void showPush(JSONObject data){

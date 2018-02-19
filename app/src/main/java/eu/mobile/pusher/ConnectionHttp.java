@@ -95,7 +95,7 @@ public class ConnectionHttp extends AsyncTask<String, Void, String> {
             mProgress.setVisibility(View.GONE);
 
         try {
-            if(mListener != null)
+            if(mListener != null && s != null)
                 mListener.onAnswerReceived(new JSONObject(s));
         } catch (JSONException e) {
             e.printStackTrace();
