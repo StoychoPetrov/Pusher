@@ -21,6 +21,7 @@
             </intent-filter>
         </service>
 
+
         <service
             android:name="com.pusher.android.notifications.fcm.FCMInstanceIDService">
             <intent-filter>
@@ -37,7 +38,7 @@
         </activity>
         <activity android:name=".WebViewActivity">
             <intent-filter>
-                <action android:name="WEB_VIEW" />
+                <action android:name="ACTIVITY_XPTO" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

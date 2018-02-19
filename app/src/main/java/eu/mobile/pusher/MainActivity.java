@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,7 +45,35 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
         initUI();
         setListerners();
 
-        connectPusherAndSubscribe("mobile_" + 4, "mobile_" + 4);
+//        connectPusherAndSubscribe("mobile_" + 4, "mobile_" + 4);
+
+        PushNotifications.setOnMessageReceivedListener(new PushNotificationReceivedListener() {
+            @Override
+            public void onMessageReceived(RemoteMessage remoteMessage) {
+                RemoteMessage.Notification notification = remoteMessage.getNotification();
+                if(notification != null) {
+                    NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this)
+                            .setSmallIcon(R.drawable.ic_push)
+                            .setContentTitle(notification.getTitle())
+                            .setContentText(notification.getBody());
+
+                    Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
+                    intent.putExtra("url_to_open", remoteMessage.getData().get("url_to_open"));
+
+                    PendingIntent resultPendingIntent =
+                            PendingIntent.getActivity(
+                                    MainActivity.this,
+                                    0,
+                                    intent,
+                                    PendingIntent.FLAG_UPDATE_CURRENT
+                            );
+                    builder.setAutoCancel(true);
+                    builder.setContentIntent(resultPendingIntent);
+                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                    manager.notify(0, builder.build());
+                }
+            }
+        });
     }
 
     private void initUI(){
@@ -66,42 +95,44 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
 
     private void connectPusherAndSubscribe(String channelName, String eventName){
 
-        PusherAndroid pusher = new PusherAndroid("f1373bb0-1b5f-4939-8a25-5d730bd0037a");
-        PushNotificationRegistration nativePusher = pusher.nativePusher();
-        try {
-            nativePusher.registerFCM(this, new PushNotificationRegistrationListener() {
-                @Override
-                public void onSuccessfulRegistration() {
-                    Log.d("hello", "success");
-                }
-
-                @Override
-                public void onFailedRegistration(int statusCode, String response) {
-                    Log.d("hello", "failed");
-                }
-            });
-        } catch (ManifestValidator.InvalidManifestException e) {
-            e.printStackTrace();
-        }
-
-        PushNotificationRegistration push = pusher.nativePusher();
-        push.subscribe("hello");
-
-        push.setFCMListener(new FCMPushNotificationReceivedListener() {
-            @Override
-            public void onMessageReceived(RemoteMessage remoteMessage) {
-                Log.d("hello", "hello");
-            }
-        });
-//        PushNotifications.start(getApplicationContext(), "f1373bb0-1b5f-4939-8a25-5d730bd0037a");
+//        PusherAndroid pusher = new PusherAndroid("f1373bb0-1b5f-4939-8a25-5d730bd0037a");
+//        PushNotificationRegistration nativePusher = pusher.nativePusher();
+//        try {
+//            nativePusher.registerFCM(this, new PushNotificationRegistrationListener() {
+//                @Override
+//                public void onSuccessfulRegistration() {
+//                    Log.d("hello", "success");
+//                }
 //
-//        PushNotifications.subscribe("hello");
-//        PushNotifications.setOnMessageReceivedListener(new PushNotificationReceivedListener() {
+//                @Override
+//                public void onFailedRegistration(int statusCode, String response) {
+//                    Log.d("hello", "failed");
+//                }
+//            });
+//        } catch (ManifestValidator.InvalidManifestException e) {
+//            e.printStackTrace();
+//        }
+//
+//        PushNotificationRegistration push = pusher.nativePusher();
+//        push.subscribe("hello");
+//
+//        push.setFCMListener(new FCMPushNotificationReceivedListener() {
 //            @Override
 //            public void onMessageReceived(RemoteMessage remoteMessage) {
-//                Log.i("hello", "hello");
+//                Log.d("hello", "hello");
 //            }
 //        });
+        PushNotifications.start(getApplicationContext(), "f1373bb0-1b5f-4939-8a25-5d730bd0037a");
+
+        PushNotifications.subscribe("hello");
+        PushNotifications.setOnMessageReceivedListener(new PushNotificationReceivedListener() {
+            @Override
+            public void onMessageReceived(RemoteMessage remoteMessage) {
+                RemoteMessage.Notification notification = remoteMessage.getNotification();
+                notification.notify();
+                Log.i("hello", "hello");
+            }
+        });
     }
 
     private void showPush(JSONObject data){
