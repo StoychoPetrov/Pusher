@@ -1,8 +1,5 @@
-package eu.mobile.pusher;
+package eu.mobile.fashionpoint;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;

@@ -1,27 +1,27 @@
 {
   "project_info": {
-    "project_number": "824613800304",
-    "firebase_url": "https://pusher-162b3.firebaseio.com",
-    "project_id": "pusher-162b3",
-    "storage_bucket": "pusher-162b3.appspot.com"
+    "project_number": "318485352536",
+    "firebase_url": "https://fashionpoint-188913.firebaseio.com",
+    "project_id": "fashionpoint-188913",
+    "storage_bucket": "fashionpoint-188913.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:824613800304:android:3f62a44eb99a7f02",
+        "mobilesdk_app_id": "1:318485352536:android:77233c849de46381",
         "android_client_info": {
-          "package_name": "eu.mobile.pusher"
+          "package_name": "eu.mobile.fashionpoint"
         }
       },
       "oauth_client": [
         {
-          "client_id": "824613800304-1u6hts5i98vb6i2nv459d6s6i1q3uc7r.apps.googleusercontent.com",
+          "client_id": "318485352536-gmj5v8h92pf37g1q6frc86tjiqht0nun.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDYuydL1Mf7DaYace8eTFnFmYBjIhpXFLA"
+          "current_key": "AIzaSyAn44BOzmMfcuYi3cSKlvCzpHs9MvyCxhM"
         }
       ],
       "services": {

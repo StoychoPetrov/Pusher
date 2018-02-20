@@ -1,4 +1,4 @@
-package eu.mobile.pusher;
+package eu.mobile.fashionpoint;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;

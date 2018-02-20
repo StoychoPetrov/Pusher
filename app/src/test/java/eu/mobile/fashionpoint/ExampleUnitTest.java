@@ -1,4 +1,4 @@
-package eu.mobile.pusher;
+package eu.mobile.fashionpoint;
 
 import org.junit.Test;
 

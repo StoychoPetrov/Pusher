@@ -1,4 +1,4 @@
-package eu.mobile.pusher;
+package eu.mobile.fashionpoint;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

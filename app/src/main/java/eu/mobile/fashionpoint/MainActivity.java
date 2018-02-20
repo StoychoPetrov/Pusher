@@ -1,4 +1,4 @@
-package eu.mobile.pusher;
+package eu.mobile.fashionpoint;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -99,7 +99,9 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
                     builder.setAutoCancel(true);
                     builder.setContentIntent(resultPendingIntent);
                     NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    manager.notify(0, builder.build());
+                    if (manager != null) {
+                        manager.notify(0, builder.build());
+                    }
                 }
             }
         });

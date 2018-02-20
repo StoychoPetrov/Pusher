@@ -1,4 +1,4 @@
-package eu.mobile.pusher;
+package eu.mobile.fashionpoint;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

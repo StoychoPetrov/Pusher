@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Pusher</string>
+    <string name="app_name">Fashion Point</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
     <string name="you_are_logged_successful">You are logged successful</string>
