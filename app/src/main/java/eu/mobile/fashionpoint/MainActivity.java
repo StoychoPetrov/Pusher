@@ -8,6 +8,7 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,7 +18,12 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.pusher.pushnotifications.PushNotificationReceivedListener;
 import com.pusher.pushnotifications.PushNotifications;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 
 public class MainActivity extends AppCompatActivity implements ConnectionHttp.OnAnswerReceived, View.OnClickListener {
 
@@ -45,6 +51,10 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
 
         if(mSharedPreferences.getInt(PREFERENCES_USER_ID, -1) != -1){
             receivedMessageListener();
+            Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
+            intent.putExtra("url_to_open", "https://fashionpoint.bg/profile");
+            startActivity(intent);
+            finish();
         }
     }
 
