@@ -6,31 +6,39 @@
     android:layout_height   ="match_parent"
     tools:context           ="eu.mobile.fashionpoint.MainActivity">
 
-    <LinearLayout
-        android:id                  ="@+id/login_layout"
+    <RelativeLayout
         android:layout_width        ="match_parent"
-        android:layout_height       ="wrap_content"
-        android:layout_marginLeft   ="16dp"
-        android:layout_marginRight  ="16dp"
-        android:layout_centerInParent="true"
-        android:gravity             ="center"
-        android:orientation         ="vertical">
+        android:layout_height       ="match_parent"
+        android:layout_above        ="@+id/log_in"
+        android:background          ="@drawable/fashion_point">
 
-        <EditText
-            android:id              ="@+id/user_name_edt"
-            android:layout_width    ="match_parent"
-            android:layout_height   ="wrap_content"
-            android:hint            ="@string/username"
-            android:inputType       ="text"/>
+        <LinearLayout
+            android:id                  ="@+id/login_layout"
+            android:layout_width        ="match_parent"
+            android:layout_height       ="wrap_content"
+            android:layout_marginLeft   ="16dp"
+            android:layout_marginRight  ="16dp"
+            android:layout_centerInParent="true"
+            android:gravity             ="center"
+            android:orientation         ="vertical">
 
-        <EditText
-            android:id              ="@+id/password_edt"
-            android:layout_width    ="match_parent"
-            android:layout_height   ="wrap_content"
-            android:hint            ="@string/password"
-            android:inputType       ="textPassword" />
+            <EditText
+                android:id              ="@+id/user_name_edt"
+                android:layout_width    ="match_parent"
+                android:layout_height   ="wrap_content"
+                android:hint            ="@string/username"
+                android:inputType       ="text"/>
 
-    </LinearLayout>
+            <EditText
+                android:id              ="@+id/password_edt"
+                android:layout_width    ="match_parent"
+                android:layout_height   ="wrap_content"
+                android:hint            ="@string/password"
+                android:inputType       ="textPassword" />
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
     <Button
         android:id                          ="@+id/log_in"
