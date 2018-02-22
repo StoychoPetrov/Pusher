@@ -1,5 +1,6 @@
 package eu.mobile.fashionpoint;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -8,9 +9,9 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.net.http.SslError;
+import android.os.Build;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -94,14 +95,14 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void wakeUp(){
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        boolean isScreenOn = pm.isScreenOn();
-        if(!isScreenOn)
-        {
-            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.ON_AFTER_RELEASE,"MyLock");
-            wl.acquire(10000);
-            PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyCpuLock");
+        // Turn on the screen for notification
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        boolean result= Build.VERSION.SDK_INT>= Build.VERSION_CODES.KITKAT_WATCH&&powerManager.isInteractive()|| Build.VERSION.SDK_INT< Build.VERSION_CODES.KITKAT_WATCH&&powerManager.isScreenOn();
 
+        if (!result){
+            PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK |PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.ON_AFTER_RELEASE,"MH24_SCREENLOCK");
+            wl.acquire(10000);
+            PowerManager.WakeLock wl_cpu = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MH24_SCREENLOCK");
             wl_cpu.acquire(10000);
         }
     }
@@ -111,42 +112,27 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public void onMessageReceived(RemoteMessage remoteMessage) {
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        wakeUp();
-                    }
-                });
-
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
                 if(notification != null) {
-                    Drawable drawable = ContextCompat.getDrawable(WebViewActivity.this, R.drawable.ic_push);
-
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(WebViewActivity.this)
-                            .setSmallIcon(R.drawable.ic_push)
-                            .setLargeIcon(((BitmapDrawable) drawable).getBitmap())
-                            .setContentTitle(notification.getTitle())
-
-                            .setContentText(notification.getBody());
-
+                    Uri alarmSound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier(remoteMessage.getNotification().getSound(), "raw", getPackageName()));
+                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     Intent intent = new Intent(WebViewActivity.this, WebViewActivity.class);
                     intent.putExtra("url_to_open", remoteMessage.getData().get("url_to_open"));
+                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), "id_product")
+                            .setSmallIcon(R.drawable.ic_push2) //your app icon
+                            .setBadgeIconType(R.drawable.ic_push) //your app icon
+                            .setChannelId("id_product")
+                            .setContentTitle(notification.getTitle())
+                            .setAutoCancel(true).setContentIntent(pendingIntent)
+                            .setNumber(1)
+                            .setColor(255)
+                            .setContentText(notification.getBody())
+                            .setSound(alarmSound)
+                            .setWhen(System.currentTimeMillis());
 
-                    Uri alarmSound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier(remoteMessage.getNotification().getSound(), "raw", getPackageName()));
-
-                    PendingIntent resultPendingIntent =
-                            PendingIntent.getActivity(
-                                    WebViewActivity.this,
-                                    0,
-                                    intent,
-                                    PendingIntent.FLAG_UPDATE_CURRENT
-                            );
-                    builder.setAutoCancel(true);
-                    builder.setContentIntent(resultPendingIntent);
-                    builder.setSound(alarmSound);
-                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     if (manager != null) {
-                        manager.notify(0, builder.build());
+                        manager.notify(1, notificationBuilder.build());
                     }
                 }
             }

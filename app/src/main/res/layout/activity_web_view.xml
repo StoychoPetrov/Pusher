@@ -18,6 +18,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight ="true"
         android:layout_margin           ="15dp"
+        android:src                     ="@drawable/ic_exit"
         app:fabSize                     ="auto" />
 
     <RelativeLayout

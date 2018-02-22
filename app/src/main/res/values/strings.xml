@@ -2,8 +2,8 @@
     <string name="app_name">Fashion Point</string>
     <string name="username">Потребителско име</string>
     <string name="password">Парола</string>
-    <string name="you_are_logged_successful">You are logged successful</string>
-    <string name="wrong_email_or_password">Wrong email or password</string>
+    <string name="you_are_logged_successful">Вие влязохте в профила си успешно</string>
+    <string name="wrong_email_or_password">Грешен имейл или парола</string>
     <string name="login">Вход</string>
-    <string name="enter_username_and_password">Enter username and password</string>
+    <string name="enter_username_and_password">Въедете имейл и парола</string>
 </resources>
