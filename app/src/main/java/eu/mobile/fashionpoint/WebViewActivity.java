@@ -8,7 +8,10 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.net.http.SslError;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NotificationCompat;
@@ -90,16 +93,37 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         mWebView.postUrl("https://fashionpoint.bg/profile/login_check", generatePostRequest().getBytes());
     }
 
+    private void wakeUp(){
+        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        boolean isScreenOn = pm.isScreenOn();
+        if(!isScreenOn)
+        {
+            PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.ON_AFTER_RELEASE,"MyLock");
+            wl.acquire(10000);
+            PowerManager.WakeLock wl_cpu = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyCpuLock");
+
+            wl_cpu.acquire(10000);
+        }
+    }
+
     private void receivedMessageListener(){
         PushNotifications.setOnMessageReceivedListener(new PushNotificationReceivedListener() {
             @Override
             public void onMessageReceived(RemoteMessage remoteMessage) {
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        wakeUp();
+                    }
+                });
+
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
                 if(notification != null) {
                     Drawable drawable = ContextCompat.getDrawable(WebViewActivity.this, R.drawable.ic_push);
 
                     NotificationCompat.Builder builder = new NotificationCompat.Builder(WebViewActivity.this)
-                            .setSmallIcon(R.drawable.ic_push2)
+                            .setSmallIcon(R.drawable.ic_push)
                             .setLargeIcon(((BitmapDrawable) drawable).getBitmap())
                             .setContentTitle(notification.getTitle())
 
@@ -107,6 +131,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
 
                     Intent intent = new Intent(WebViewActivity.this, WebViewActivity.class);
                     intent.putExtra("url_to_open", remoteMessage.getData().get("url_to_open"));
+
+                    Uri alarmSound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier(remoteMessage.getNotification().getSound(), "raw", getPackageName()));
 
                     PendingIntent resultPendingIntent =
                             PendingIntent.getActivity(
@@ -117,6 +143,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                             );
                     builder.setAutoCancel(true);
                     builder.setContentIntent(resultPendingIntent);
+                    builder.setSound(alarmSound);
                     NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                     if (manager != null) {
                         manager.notify(0, builder.build());
