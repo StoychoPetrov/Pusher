@@ -1,12 +1,14 @@
 package eu.mobile.fashionpoint;
 
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -113,30 +115,73 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             public void onMessageReceived(RemoteMessage remoteMessage) {
 
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
-                if(notification != null) {
-                    Uri alarmSound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier(remoteMessage.getNotification().getSound(), "raw", getPackageName()));
-                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    Intent intent = new Intent(WebViewActivity.this, WebViewActivity.class);
-                    intent.putExtra("url_to_open", remoteMessage.getData().get("url_to_open"));
-                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), "id_product")
-                            .setSmallIcon(R.drawable.ic_push2) //your app icon
-                            .setBadgeIconType(R.drawable.ic_push) //your app icon
-                            .setChannelId("id_product")
-                            .setContentTitle(notification.getTitle())
-                            .setAutoCancel(true).setContentIntent(pendingIntent)
-                            .setNumber(1)
-                            .setColor(255)
-                            .setContentText(notification.getBody())
-                            .setSound(alarmSound)
-                            .setWhen(System.currentTimeMillis());
-
-                    if (manager != null) {
-                        manager.notify(1, notificationBuilder.build());
-                    }
-                }
+                createNotification(notification);
+//                if(notification != null) {
+//                    Uri alarmSound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier(remoteMessage.getNotification().getSound(), "raw", getPackageName()));
+//                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+//                    Intent intent = new Intent(WebViewActivity.this, WebViewActivity.class);
+//                    intent.putExtra("url_to_open", remoteMessage.getData().get("url_to_open"));
+//                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), "id_product")
+//                            .setSmallIcon(R.drawable.ic_push2) //your app icon
+//                            .setBadgeIconType(R.drawable.ic_push) //your app icon
+//                            .setChannelId("id_product")
+//                            .setContentTitle(notification.getTitle())
+//                            .setAutoCancel(true).setContentIntent(pendingIntent)
+//                            .setNumber(1)
+//                            .setColor(255)
+//                            .setContentText(notification.getBody())
+//                            .setSound(alarmSound)
+//                            .setWhen(System.currentTimeMillis());
+//
+//                    if (manager != null) {
+//                        manager.notify(1, notificationBuilder.build());
+//                    }
+//                }
             }
         });
+    }
+
+    private void createNotification(RemoteMessage.Notification notification){
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            String id = "id_product";
+            // The user-visible name of the channel.
+            CharSequence name = "Product";
+            // The user-visible description of the channel.
+            String description = notification.getBody();
+            int importance = NotificationManager.IMPORTANCE_MAX;
+            NotificationChannel mChannel = new NotificationChannel(id, name, importance);
+            // Configure the notification channel.
+            mChannel.setDescription(description);
+            mChannel.enableLights(true);
+            // Sets the notification light color for notifications posted to this
+            // channel, if the device supports this feature.
+            mChannel.setLightColor(Color.RED);
+
+            notificationManager.createNotificationChannel(mChannel);
+        }
+
+        Intent intent1 = new Intent(getApplicationContext(), MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 123, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Uri alarmSound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier(notification.getSound(), "raw", getPackageName()));
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(),"id_product")
+                .setSmallIcon(R.drawable.notification_icon) //your app icon
+                .setBadgeIconType(R.drawable.ic_push) //your app icon
+                .setChannelId("id_product")
+                .setContentTitle(notification.getTitle())
+                .setContentText(notification.getBody())
+                .setSound(alarmSound)
+                .setAutoCancel(true).setContentIntent(pendingIntent)
+                .setNumber(1)
+                .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                .setWhen(System.currentTimeMillis());
+
+        notificationManager.notify(1, notificationBuilder.build());
     }
 
     private String generatePostRequest(){
