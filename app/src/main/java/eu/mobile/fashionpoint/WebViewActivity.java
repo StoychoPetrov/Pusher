@@ -42,6 +42,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
     private WebView                 mWebView;
     private FloatingActionButton    mExitFab;
 
+    private boolean                 mUrlFromNotLoaded;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +59,12 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             loadUrl();
             receivedMessageListener();
         }
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        Bundle extras = intent.getExtras();
+
     }
 
     private void createChannel(){
@@ -79,7 +87,11 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             // Configure the notification channel.
             mChannel.enableLights(true);
             mChannel.setSound(sound, audioAttributes);
-            mChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+            mChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            mChannel.enableLights(true);
+            mChannel.enableVibration(true);
+            mChannel.enableLights(true);
+            mChannel.setVibrationPattern(new long[] { 1000, 1000, 1000, 1000, 1000 });
             // Sets the notification light color for notifications posted to this
             // channel, if the device supports this feature.
             mChannel.setLightColor(Color.RED);
@@ -107,6 +119,11 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 super.onPageFinished(view, url);
 
                 findViewById(R.id.progress_layout).setVisibility(View.GONE);
+
+                if(getIntent() != null && getIntent().hasExtra("url_to_open") && !mUrlFromNotLoaded) {
+                    mWebView.loadUrl(getIntent().getStringExtra("url_to_open"));
+                    mUrlFromNotLoaded = true;
+                }
             }
 
             @Override
@@ -124,10 +141,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        if(getIntent() == null || !getIntent().hasExtra("url_to_open"))
-            mWebView.postUrl("https://fashionpoint.bg/profile/login_check", generatePostRequest().getBytes());
-        else
-            mWebView.loadUrl(getIntent().getStringExtra("url_to_open"));
+        mWebView.postUrl("https://fashionpoint.bg/profile/login_check", generatePostRequest().getBytes());
     }
 
     private void wakeUp(){
@@ -175,7 +189,10 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             mChannel.setDescription(description);
             mChannel.enableLights(true);
             mChannel.setSound(sound, audioAttributes);
-            mChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+            mChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            mChannel.enableVibration(true);
+            mChannel.enableLights(true);
+            mChannel.setVibrationPattern(new long[] { 1000, 1000, 1000, 1000, 1000 });
             // Sets the notification light color for notifications posted to this
             // channel, if the device supports this feature.
             mChannel.setLightColor(Color.RED);
@@ -185,7 +202,9 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
 
         Intent intent1 = new Intent(getApplicationContext(), MainActivity.class);
         intent1.putExtra("url_to_open", url);
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 123, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+        intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(),getString(R.string.channel_id))
                 .setSmallIcon(R.drawable.notification_icon) //your app icon
@@ -194,9 +213,13 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 .setContentTitle(notification.getTitle())
                 .setContentText(notification.getBody())
                 .setSound(sound)
-                .setAutoCancel(true).setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
+                .setContentIntent(pendingIntent)
                 .setNumber(1)
+                .setPriority(Notification.PRIORITY_MAX)
                 .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setWhen(System.currentTimeMillis());
 
         notificationManager.notify(1, notificationBuilder.build());

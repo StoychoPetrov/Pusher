@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
         setListerners();
 
         if(mSharedPreferences.getInt(PREFERENCES_USER_ID, -1) != -1){
-            receivedMessageListener();
             openWebViewActivity();
         }
     }
@@ -89,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
         PushNotifications.start(getApplicationContext(), "f1373bb0-1b5f-4939-8a25-5d730bd0037a");
 
         PushNotifications.subscribe(interest);
-        receivedMessageListener();
 
         openWebViewActivity();
     }
@@ -98,38 +96,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
         Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
         startActivity(intent);
         finish();
-    }
-
-    private void receivedMessageListener(){
-        PushNotifications.setOnMessageReceivedListener(new PushNotificationReceivedListener() {
-            @Override
-            public void onMessageReceived(RemoteMessage remoteMessage) {
-                RemoteMessage.Notification notification = remoteMessage.getNotification();
-                if(notification != null) {
-                    NotificationCompat.Builder builder = new NotificationCompat.Builder(MainActivity.this)
-                            .setSmallIcon(R.drawable.ic_push)
-                            .setContentTitle(notification.getTitle())
-                            .setContentText(notification.getBody());
-
-                    Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
-                    intent.putExtra("url_to_open", remoteMessage.getData().get("url_to_open"));
-
-                    PendingIntent resultPendingIntent =
-                            PendingIntent.getActivity(
-                                    MainActivity.this,
-                                    0,
-                                    intent,
-                                    PendingIntent.FLAG_UPDATE_CURRENT
-                            );
-                    builder.setAutoCancel(true);
-                    builder.setContentIntent(resultPendingIntent);
-                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                    if (manager != null) {
-                        manager.notify(0, builder.build());
-                    }
-                }
-            }
-        });
     }
 
     @Override
