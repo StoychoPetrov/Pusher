@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.AudioAttributes;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -52,8 +53,38 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
 
             mExitFab.setOnClickListener(this);
 
+            createChannel();
             loadUrl();
             receivedMessageListener();
+        }
+    }
+
+    private void createChannel(){
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Uri sound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier("bell_small", "raw", getPackageName()));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build();
+
+            // The user-visible name of th
+            // e channel.
+            CharSequence name = "Product";
+            // The user-visible description of the channel.
+            int importance = NotificationManager.IMPORTANCE_MAX;
+            NotificationChannel mChannel = new NotificationChannel(getString(R.string.channel_id), name, NotificationManager.IMPORTANCE_HIGH);
+            // Configure the notification channel.
+            mChannel.enableLights(true);
+            mChannel.setSound(sound, audioAttributes);
+            mChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+            // Sets the notification light color for notifications posted to this
+            // channel, if the device supports this feature.
+            mChannel.setLightColor(Color.RED);
+
+            notificationManager.createNotificationChannel(mChannel);
         }
     }
 
@@ -93,7 +124,10 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        mWebView.postUrl("https://fashionpoint.bg/profile/login_check", generatePostRequest().getBytes());
+        if(getIntent() == null || !getIntent().hasExtra("url_to_open"))
+            mWebView.postUrl("https://fashionpoint.bg/profile/login_check", generatePostRequest().getBytes());
+        else
+            mWebView.loadUrl(getIntent().getStringExtra("url_to_open"));
     }
 
     private void wakeUp(){
@@ -115,48 +149,33 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             public void onMessageReceived(RemoteMessage remoteMessage) {
 
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
-                createNotification(notification);
-//                if(notification != null) {
-//                    Uri alarmSound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier(remoteMessage.getNotification().getSound(), "raw", getPackageName()));
-//                    NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//                    Intent intent = new Intent(WebViewActivity.this, WebViewActivity.class);
-//                    intent.putExtra("url_to_open", remoteMessage.getData().get("url_to_open"));
-//                    PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 123, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-//                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(), "id_product")
-//                            .setSmallIcon(R.drawable.ic_push2) //your app icon
-//                            .setBadgeIconType(R.drawable.ic_push) //your app icon
-//                            .setChannelId("id_product")
-//                            .setContentTitle(notification.getTitle())
-//                            .setAutoCancel(true).setContentIntent(pendingIntent)
-//                            .setNumber(1)
-//                            .setColor(255)
-//                            .setContentText(notification.getBody())
-//                            .setSound(alarmSound)
-//                            .setWhen(System.currentTimeMillis());
-//
-//                    if (manager != null) {
-//                        manager.notify(1, notificationBuilder.build());
-//                    }
-//                }
+                createNotification(notification, remoteMessage.getData().get("url_to_open"));
             }
         });
     }
 
-    private void createNotification(RemoteMessage.Notification notification){
+    private void createNotification(RemoteMessage.Notification notification, String url){
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        Uri sound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier(notification.getSound(), "raw", getPackageName()));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-            String id = "id_product";
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build();
+
             // The user-visible name of the channel.
             CharSequence name = "Product";
             // The user-visible description of the channel.
             String description = notification.getBody();
             int importance = NotificationManager.IMPORTANCE_MAX;
-            NotificationChannel mChannel = new NotificationChannel(id, name, importance);
+            NotificationChannel mChannel = new NotificationChannel(getString(R.string.channel_id), name, NotificationManager.IMPORTANCE_HIGH);
             // Configure the notification channel.
             mChannel.setDescription(description);
             mChannel.enableLights(true);
+            mChannel.setSound(sound, audioAttributes);
+            mChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
             // Sets the notification light color for notifications posted to this
             // channel, if the device supports this feature.
             mChannel.setLightColor(Color.RED);
@@ -165,17 +184,16 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         }
 
         Intent intent1 = new Intent(getApplicationContext(), MainActivity.class);
+        intent1.putExtra("url_to_open", url);
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 123, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Uri alarmSound = Uri.parse("android.resource://" + getPackageName() + "/" + getResources().getIdentifier(notification.getSound(), "raw", getPackageName()));
-
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(),"id_product")
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(),getString(R.string.channel_id))
                 .setSmallIcon(R.drawable.notification_icon) //your app icon
                 .setBadgeIconType(R.drawable.ic_push) //your app icon
-                .setChannelId("id_product")
+                .setChannelId(getString(R.string.channel_id))
                 .setContentTitle(notification.getTitle())
                 .setContentText(notification.getBody())
-                .setSound(alarmSound)
+                .setSound(sound)
                 .setAutoCancel(true).setContentIntent(pendingIntent)
                 .setNumber(1)
                 .setColor(ContextCompat.getColor(this, R.color.colorPrimary))

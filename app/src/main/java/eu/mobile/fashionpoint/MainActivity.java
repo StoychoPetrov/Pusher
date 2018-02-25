@@ -96,7 +96,6 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
 
     private void openWebViewActivity(){
         Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
-        intent.putExtra("url_to_open", "https://fashionpoint.bg/profile");
         startActivity(intent);
         finish();
     }

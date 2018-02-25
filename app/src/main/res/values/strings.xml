@@ -6,4 +6,5 @@
     <string name="wrong_email_or_password">Грешен имейл или парола</string>
     <string name="login">Вход</string>
     <string name="enter_username_and_password">Въедете имейл и парола</string>
+    <string name="channel_id">mobile_android</string>
 </resources>
