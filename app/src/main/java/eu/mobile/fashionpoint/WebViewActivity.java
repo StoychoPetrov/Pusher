@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.AudioAttributes;
@@ -19,6 +20,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
@@ -46,6 +48,10 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view);
 
+        if(isTablet()){
+            setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+
         if(getIntent() != null) {
             mWebView    = (WebView)                 findViewById(R.id.webview);
             mExitFab    = (FloatingActionButton)    findViewById(R.id.exit_icon);
@@ -56,6 +62,22 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             loadUrl();
             receivedMessageListener();
         }
+    }
+
+    private boolean isTablet() {
+        try {
+            // Compute screen size
+            DisplayMetrics dm = getResources().getDisplayMetrics();
+            float screenWidth  = dm.widthPixels / dm.xdpi;
+            float screenHeight = dm.heightPixels / dm.ydpi;
+            double size = Math.sqrt(Math.pow(screenWidth, 2) +
+                    Math.pow(screenHeight, 2));
+            // Tablet devices should have a screen size greater than 6 inches
+            return size >= 6;
+        } catch(Throwable t) {
+            return false;
+        }
+
     }
 
     private void createChannel(){
