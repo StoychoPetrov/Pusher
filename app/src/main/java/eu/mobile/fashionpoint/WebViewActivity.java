@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.AudioAttributes;
@@ -21,6 +22,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -55,6 +57,10 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view);
+
+        if(isTablet()){
+            setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
 
         if(getIntent() != null) {
             mSwipeRefreshLayout = findViewById(R.id.swipe_refresh);
@@ -91,9 +97,19 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         });
     }
 
-    @Override
-    public void onNewIntent(Intent intent) {
-        Bundle extras = intent.getExtras();
+    private boolean isTablet() {
+        try {
+            // Compute screen size
+            DisplayMetrics dm = getResources().getDisplayMetrics();
+            float screenWidth  = dm.widthPixels / dm.xdpi;
+            float screenHeight = dm.heightPixels / dm.ydpi;
+            double size = Math.sqrt(Math.pow(screenWidth, 2) +
+                    Math.pow(screenHeight, 2));
+            // Tablet devices should have a screen size greater than 6 inches
+            return size >= 6;
+        } catch(Throwable t) {
+            return false;
+        }
 
     }
 
@@ -125,7 +141,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             mChannel.enableLights(true);
             mChannel.enableVibration(true);
             mChannel.enableLights(true);
-            mChannel.setVibrationPattern(new long[] { 1000, 1000, 1000, 1000, 1000 });
+            mChannel.setVibrationPattern(new long[]{300, 200, 300, 200, 300});
             // Sets the notification light color for notifications posted to this
             // channel, if the device supports this feature.
             mChannel.setLightColor(Color.RED);
@@ -187,8 +203,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         boolean result= Build.VERSION.SDK_INT>= Build.VERSION_CODES.KITKAT_WATCH&&powerManager.isInteractive()|| Build.VERSION.SDK_INT< Build.VERSION_CODES.KITKAT_WATCH&&powerManager.isScreenOn();
 
         if (!result){
-            PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK |PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.ON_AFTER_RELEASE,"MH24_SCREENLOCK");
-            wl.acquire(10000);
+            PowerManager.WakeLock wl_cpu = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MH24_SCREENLOCK");
+            wl_cpu.acquire(10000);
         }
     }
 
@@ -220,7 +236,6 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             @Override
             public void onMessageReceived(RemoteMessage remoteMessage) {
                 wakeUp();
-
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
                 createNotification(notification, remoteMessage.getData().get("url_to_open"));
 
@@ -253,7 +268,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             mChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
             mChannel.enableVibration(true);
             mChannel.enableLights(true);
-            mChannel.setVibrationPattern(new long[] { 1000, 1000, 1000, 1000, 1000 });
+            mChannel.setVibrationPattern(new long[] { 300, 200, 300, 200, 300});
             // Sets the notification light color for notifications posted to this
             // channel, if the device supports this feature.
             mChannel.setLightColor(Color.RED);
@@ -261,11 +276,11 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             notificationManager.createNotificationChannel(mChannel);
         }
 
-        Intent intent1 = new Intent(getApplicationContext(), MainActivity.class);
+        Intent intent1 = new Intent(this, WebViewActivity.class);
         intent1.putExtra("url_to_open", url);
-        intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent1, PendingIntent.FLAG_CANCEL_CURRENT);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(getApplicationContext(),getString(R.string.channel_id))
                 .setSmallIcon(R.drawable.notification_icon) //your app icon
@@ -275,10 +290,9 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 .setContentText(notification.getBody())
                 .setSound(sound)
                 .setAutoCancel(true)
-                .setVibrate(new long[] { 1000, 1000, 1000, 1000, 1000 })
+                .setVibrate(new long[]{300, 200, 300, 200, 300})
                 .setContentIntent(pendingIntent)
                 .setNumber(1)
-                .setPriority(Notification.PRIORITY_MAX)
                 .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
                 .setWhen(System.currentTimeMillis());

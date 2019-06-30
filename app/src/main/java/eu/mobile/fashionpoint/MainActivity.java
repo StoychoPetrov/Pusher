@@ -4,11 +4,14 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -43,6 +46,16 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
 
         initUI();
         setListerners();
+
+        if(isTablet()){
+            setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            findViewById(R.id.root_view).setBackgroundResource(R.drawable.tablet_background);
+        }
+
+        if(mSharedPreferences.getInt(Utils.PREFERENCES_USER_ID, -1) != -1){
+            setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            findViewById(R.id.root_view).setBackgroundResource(R.drawable.tablet_background);
+        }
 
         if(mSharedPreferences.getInt(Utils.PREFERENCES_USER_ID, -1) != -1){
             openWebViewActivity();
@@ -81,6 +94,22 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
                 return false;
             }
         });
+    }
+
+    private boolean isTablet() {
+        try {
+            // Compute screen size
+            DisplayMetrics dm = getResources().getDisplayMetrics();
+            float screenWidth  = dm.widthPixels / dm.xdpi;
+            float screenHeight = dm.heightPixels / dm.ydpi;
+            double size = Math.sqrt(Math.pow(screenWidth, 2) +
+                    Math.pow(screenHeight, 2));
+            // Tablet devices should have a screen size greater than 6 inches
+            return size >= 6;
+        } catch(Throwable t) {
+            return false;
+        }
+
     }
 
     private void login() throws UnsupportedEncodingException {
