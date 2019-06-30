@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -22,13 +23,10 @@ import com.pusher.pushnotifications.PushNotifications;
 
 import org.json.JSONObject;
 
-public class MainActivity extends AppCompatActivity implements ConnectionHttp.OnAnswerReceived, View.OnClickListener {
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
-    private static final String STATUS_KEY                          = "status";
-    private static final String ID_KEY                              = "id";
-    private static final String PREFERENCES_USERNAME                = "username";
-    private static final String PREFERENCES_PASSWORD                = "password";
-    private static final String PREFERENCES_USER_ID                 = "user_id";
+public class MainActivity extends AppCompatActivity implements ConnectionHttp.OnAnswerReceived, View.OnClickListener {
 
     private Button      mLoginBtn;
     private EditText    mUsernameEdt;
@@ -46,8 +44,12 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
         initUI();
         setListerners();
 
-        if(mSharedPreferences.getInt(PREFERENCES_USER_ID, -1) != -1){
+        if(mSharedPreferences.getInt(Utils.PREFERENCES_USER_ID, -1) != -1){
             openWebViewActivity();
+        }
+        else {
+            mUsernameEdt.setText(mSharedPreferences.getString(Utils.PREFERENCES_USERNAME, ""));
+            mPasswordEdt.setText(mSharedPreferences.getString(Utils.PREFERENCES_PASSWORD, ""));
         }
     }
 
@@ -66,8 +68,13 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    if(!mUsernameEdt.getText().toString().isEmpty() && !mPasswordEdt.getText().toString().isEmpty())
-                        login();
+                    if(!mUsernameEdt.getText().toString().isEmpty() && !mPasswordEdt.getText().toString().isEmpty()) {
+                        try {
+                            login();
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
                     else
                         Toast.makeText(MainActivity.this, getString(R.string.enter_username_and_password), Toast.LENGTH_SHORT).show();
                 }
@@ -76,11 +83,15 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
         });
     }
 
-    private void login(){
-        ConnectionHttp connectionHttp = new ConnectionHttp(mUsernameEdt.getText().toString(), mPasswordEdt.getText().toString());
+    private void login() throws UnsupportedEncodingException {
+
+        String data = URLEncoder.encode("_username", "UTF-8") + "=" + URLEncoder.encode(mUsernameEdt.getText().toString(), "UTF-8");
+        data += "&" + URLEncoder.encode("_password", "UTF-8") + "=" + URLEncoder.encode(mPasswordEdt.getText().toString(), "UTF-8");
+
+        ConnectionHttp connectionHttp = new ConnectionHttp(data);
         connectionHttp.setmProgress(findViewById(R.id.progress_layout));
         connectionHttp.setmListener(this);
-        connectionHttp.execute("http://fashionpoint.bg/profile/login_check");
+        connectionHttp.execute(BuildConfig.API_URL + "profile/login_check");
     }
 
     private void connectPusherAndSubscribe(String interest){
@@ -93,22 +104,25 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
     }
 
     private void openWebViewActivity(){
-        Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
+        Intent intent = new Intent(MainActivity.this, ReservationsActivity.class);
         startActivity(intent);
         finish();
     }
 
     @Override
-    public void onAnswerReceived(JSONObject answer) {
+    public void onAnswerReceived(String answer) {
         try {
-            if(answer.getBoolean(STATUS_KEY)){
+
+            JSONObject jsonObject = new JSONObject(answer);
+
+            if(jsonObject.getBoolean(Utils.STATUS_KEY)){
                 Toast.makeText(this, getString(R.string.you_are_logged_successful), Toast.LENGTH_SHORT).show();
-                connectPusherAndSubscribe("mobile_" + answer.getInt(ID_KEY));
+                connectPusherAndSubscribe("mobile_" + jsonObject.getInt(Utils.ID_KEY));
 
                 mEditor = mSharedPreferences.edit();
-                mEditor.putString(PREFERENCES_USERNAME, mUsernameEdt.getText().toString());
-                mEditor.putString(PREFERENCES_PASSWORD, mPasswordEdt.getText().toString());
-                mEditor.putInt(PREFERENCES_USER_ID,  answer.getInt(ID_KEY));
+                mEditor.putString(Utils.PREFERENCES_USERNAME, mUsernameEdt.getText().toString());
+                mEditor.putString(Utils.PREFERENCES_PASSWORD, mPasswordEdt.getText().toString());
+                mEditor.putInt(Utils.PREFERENCES_USER_ID,  jsonObject.getInt(Utils.ID_KEY));
 
                 mEditor.apply();
             }
@@ -123,8 +137,13 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
     @Override
     public void onClick(View view) {
         if(view.getId() == mLoginBtn.getId()) {
-            if(!mUsernameEdt.getText().toString().isEmpty() && !mPasswordEdt.getText().toString().isEmpty())
-                login();
+            if(!mUsernameEdt.getText().toString().isEmpty() && !mPasswordEdt.getText().toString().isEmpty()) {
+                try {
+                    login();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
             else
                 Toast.makeText(this, getString(R.string.enter_username_and_password), Toast.LENGTH_SHORT).show();
         }

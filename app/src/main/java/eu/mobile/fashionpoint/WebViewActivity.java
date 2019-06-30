@@ -4,30 +4,31 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.AudioAttributes;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.webkit.JavascriptInterface;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import com.google.firebase.messaging.RemoteMessage;
 import com.pusher.pushnotifications.PushNotificationReceivedListener;
@@ -39,8 +40,14 @@ import java.net.URLEncoder;
 
 public class WebViewActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
+
     private WebView                 mWebView;
     private FloatingActionButton    mExitFab;
+    private SwipeRefreshLayout      mSwipeRefreshLayout;
+
+    private ViewTreeObserver.OnScrollChangedListener mOnScrollChangedListener;
+
 
     private boolean                 mUrlFromNotLoaded;
 
@@ -50,21 +57,48 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_web_view);
 
         if(getIntent() != null) {
-            mWebView    = (WebView)                 findViewById(R.id.webview);
-            mExitFab    = (FloatingActionButton)    findViewById(R.id.exit_icon);
+            mSwipeRefreshLayout = findViewById(R.id.swipe_refresh);
+            mWebView            = (WebView)                 findViewById(R.id.webview);
+            mExitFab            = (FloatingActionButton)    findViewById(R.id.exit_icon);
 
             mExitFab.setOnClickListener(this);
 
+            setListeners();
             createChannel();
             loadUrl();
             receivedMessageListener();
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+
+                //If the draw over permission is not available open the settings screen
+                //to grant the permission.
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
+            } else {
+                initializeView();
+            }
         }
+    }
+
+    private void setListeners(){
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadUrl();
+            }
+        });
     }
 
     @Override
     public void onNewIntent(Intent intent) {
         Bundle extras = intent.getExtras();
 
+    }
+
+    private void initializeView() {
+        startService(new Intent(WebViewActivity.this, ChatHeadService.class));
     }
 
     private void createChannel(){
@@ -124,6 +158,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                     mWebView.loadUrl(getIntent().getStringExtra("url_to_open"));
                     mUrlFromNotLoaded = true;
                 }
+
+                mSwipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
@@ -132,7 +168,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
 
                 Log.d("onPageStarted", url);
 
-                findViewById(R.id.progress_layout).setVisibility(View.VISIBLE);
+                if(!mSwipeRefreshLayout.isRefreshing())
+                    findViewById(R.id.progress_layout).setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -152,18 +189,42 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         if (!result){
             PowerManager.WakeLock wl = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK |PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.ON_AFTER_RELEASE,"MH24_SCREENLOCK");
             wl.acquire(10000);
-            PowerManager.WakeLock wl_cpu = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MH24_SCREENLOCK");
-            wl_cpu.acquire(10000);
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        mSwipeRefreshLayout.getViewTreeObserver().addOnScrollChangedListener(mOnScrollChangedListener =
+                new ViewTreeObserver.OnScrollChangedListener() {
+                    @Override
+                    public void onScrollChanged() {
+                        if (mWebView.getScrollY() == 0)
+                            mSwipeRefreshLayout.setEnabled(true);
+                        else
+                            mSwipeRefreshLayout.setEnabled(false);
+                    }
+                });
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        mSwipeRefreshLayout.getViewTreeObserver().removeOnScrollChangedListener(mOnScrollChangedListener);
     }
 
     private void receivedMessageListener(){
         PushNotifications.setOnMessageReceivedListener(new PushNotificationReceivedListener() {
             @Override
             public void onMessageReceived(RemoteMessage remoteMessage) {
+                wakeUp();
 
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
                 createNotification(notification, remoteMessage.getData().get("url_to_open"));
+
+                Log.d("background_notification", "receive");
             }
         });
     }
@@ -246,8 +307,6 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             PushNotifications.start(getApplicationContext(), "f1373bb0-1b5f-4939-8a25-5d730bd0037a");
             PushNotifications.unsubscribe("mobile_" + sharedPreferences.getInt("user_id", -1));
 
-            editor.putString("username", "");
-            editor.putString("password", "");
             editor.putInt("user_id", -1);
 
             editor.apply();
@@ -255,6 +314,25 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CODE_DRAW_OVER_OTHER_APP_PERMISSION) {
+
+            //Check if the permission is granted or not.
+            if (resultCode == RESULT_OK) {
+                initializeView();
+            } else { //Permission is not available
+                Toast.makeText(this,
+                        "Draw over other app permission not available. Closing the application",
+                        Toast.LENGTH_SHORT).show();
+
+                finish();
+            }
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 

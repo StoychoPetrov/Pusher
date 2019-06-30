@@ -21,18 +21,16 @@ import java.net.URLEncoder;
 
 public class ConnectionHttp extends AsyncTask<String, Void, String> {
 
-    private String              mUserName;
-    private String              mPassword;
+    private String              mBody;
     private View                mProgress;
     private OnAnswerReceived    mListener;
 
     public interface OnAnswerReceived {
-        void onAnswerReceived(JSONObject answer);
+        void onAnswerReceived(String answer);
     }
 
-    public ConnectionHttp(String username, String password){
-        mUserName   = username;
-        mPassword   = password;
+    public ConnectionHttp(String body){
+        mBody   = body;
     }
 
     @Override
@@ -56,11 +54,8 @@ public class ConnectionHttp extends AsyncTask<String, Void, String> {
             urlConnectionGetChanges.setRequestProperty("Accept", "application/json");
             urlConnectionGetChanges.setRequestMethod("POST");
 
-            String data = URLEncoder.encode("_username", "UTF-8") + "=" + URLEncoder.encode(mUserName, "UTF-8");
-            data += "&" + URLEncoder.encode("_password", "UTF-8") + "=" + URLEncoder.encode(mPassword, "UTF-8");
-
             OutputStreamWriter writer = new OutputStreamWriter(urlConnectionGetChanges.getOutputStream());
-            writer.write(data);
+            writer.write(mBody);
             writer.flush();
 
             int statusCode = urlConnectionGetChanges.getResponseCode();
@@ -94,12 +89,8 @@ public class ConnectionHttp extends AsyncTask<String, Void, String> {
         if(mProgress != null)
             mProgress.setVisibility(View.GONE);
 
-        try {
             if(mListener != null && s != null)
-                mListener.onAnswerReceived(new JSONObject(s));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+                mListener.onAnswerReceived(s);
     }
 
     public View getmProgress() {

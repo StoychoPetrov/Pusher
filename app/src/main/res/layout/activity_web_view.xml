@@ -6,10 +6,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="eu.mobile.fashionpoint.WebViewActivity">
 
-    <WebView
-        android:id              ="@+id/webview"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id              ="@+id/swipe_refresh"
         android:layout_width    ="match_parent"
-        android:layout_height   ="match_parent"/>
+        android:layout_height   ="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+
+        <RelativeLayout
+            android:id="@+id/nonVideoLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:windowSoftInputMode="adjustResize">
+
+            <WebView
+                android:id              ="@+id/webview"
+                android:layout_width    ="match_parent"
+                android:layout_height   ="match_parent"
+                app:layout_constraintDimensionRatio="1"/>
+
+        </RelativeLayout>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id                      ="@+id/exit_icon"
