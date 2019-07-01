@@ -13,6 +13,7 @@ import android.media.AudioAttributes;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
+import android.os.Handler;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -50,6 +51,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
 
     private ViewTreeObserver.OnScrollChangedListener mOnScrollChangedListener;
 
+    private Handler                 mHandler;
+    private Runnable                mRunnable;
 
     private boolean                 mUrlFromNotLoaded;
 
@@ -176,6 +179,18 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 }
 
                 mSwipeRefreshLayout.setRefreshing(false);
+
+//                if(mHandler != null && mRunnable != null)
+//                    mHandler.removeCallbacks(mRunnable);
+//
+//                if()
+//                setHandler();
+
+//                if(getIntent() != null
+//                        && getIntent().getStringExtra("url") != null
+//                        && !getIntent().getStringExtra("url").isEmpty()
+//                        && url.equalsIgnoreCase())
+//                    mWebView.loadUrl(getIntent().getStringExtra("url"));
             }
 
             @Override
@@ -195,6 +210,18 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         });
 
         mWebView.postUrl("https://fashionpoint.bg/profile/login_check", generatePostRequest().getBytes());
+    }
+
+    private void setHandler(){
+        mHandler    = new Handler();
+        mRunnable   = new Runnable() {
+            @Override
+            public void run() {
+                mWebView.loadUrl(getIntent().getStringExtra("url"));
+            }
+        };
+
+        mHandler.postDelayed(mRunnable, 1000);
     }
 
     private void wakeUp(){

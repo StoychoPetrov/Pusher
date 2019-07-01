@@ -17,6 +17,10 @@ public class ChatHeadService extends Service {
     private WindowManager mWindowManager;
     private View mChatHeadView;
 
+    private int CLICK_ACTION_THRESHHOLD = 100;
+
+    private long lastTouchDown;
+
     public ChatHeadService() {
     }
 
@@ -79,6 +83,8 @@ public class ChatHeadService extends Service {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
 
+                        lastTouchDown = System.currentTimeMillis();
+
                         //remember the initial position.
                         initialX = params.x;
                         initialY = params.y;
@@ -93,11 +99,19 @@ public class ChatHeadService extends Service {
                         //As we implemented on touch listener with ACTION_MOVE,
                         //we have to check if the previous action was ACTION_DOWN
                         //to identify if the user clicked the view or not.
-                        if (lastAction == MotionEvent.ACTION_DOWN) {
-                            //Open the chat conversation click.
+
+                        float endX = event.getX();
+                        float endY = event.getY();
+
+                        if (System.currentTimeMillis() - lastTouchDown < CLICK_ACTION_THRESHHOLD
+                                && !Utils.isRunning(getApplicationContext())) {
                             Intent intent = new Intent(ChatHeadService.this, ReservationsActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(intent);
+                        }
+
+                        if (lastAction == MotionEvent.ACTION_DOWN) {
+                            //Open the chat conversation click.
 
                             //close the service and remove the chat heads
                             stopSelf();
@@ -118,6 +132,12 @@ public class ChatHeadService extends Service {
             }
         });
     }
+//
+//    private boolean isAClick(float startX, float endX, float startY, float endY) {
+//        float differenceX = Math.abs(startX - endX);
+//        float differenceY = Math.abs(startY - endY);
+//        return !(differenceX > CLICK_ACTION_THRESHOLD/* =5 */ || differenceY > CLICK_ACTION_THRESHOLD);
+//    }
 
     @Override
     public void onDestroy() {

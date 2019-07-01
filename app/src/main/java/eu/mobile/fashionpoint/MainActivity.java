@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
     }
 
     private void openWebViewActivity(){
-        Intent intent = new Intent(MainActivity.this, ReservationsActivity.class);
+        Intent intent = new Intent(MainActivity.this, WebViewActivity.class);
         startActivity(intent);
         finish();
     }

@@ -1,5 +1,14 @@
 package eu.mobile.fashionpoint;
 
+import android.app.ActivityManager;
+import android.content.Context;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 public class Utils {
 
     public static final String STATUS_KEY                          = "status";
@@ -17,4 +26,44 @@ public class Utils {
     public static final String  TAG_SPECIALIST                      = "specialist";
     public static final String  TAG_ROOM                            = "room";
     public static final String  TAG_URL                             = "url";
+
+    public static Date parseDate(String date){
+        try {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+            return simpleDateFormat.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static String formatHour(Date date){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        return simpleDateFormat.format(date);
+    }
+
+    public static Date parseTime(String date){
+        try {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            return simpleDateFormat.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static boolean isRunning(Context ctx) {
+        ActivityManager activityManager = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> tasks = activityManager.getRunningTasks(Integer.MAX_VALUE);
+
+        for (ActivityManager.RunningTaskInfo task : tasks) {
+            if (ctx.getPackageName().equalsIgnoreCase(task.topActivity.getPackageName())
+                && task.topActivity.getPackageName().equalsIgnoreCase(String.valueOf(ReservationsActivity.class)))
+                return true;
+        }
+
+        return false;
+    }
 }
