@@ -13,12 +13,20 @@
         android:src="@drawable/ic_android_circle"
         tools:ignore="ContentDescription"/>
 
+    <TextView
+        android:layout_width    ="20dp"
+        android:layout_height   ="20dp"
+        android:layout_marginLeft="40dp"
+        android:gravity         ="center"
+        android:background      ="@drawable/notification_circle"
+        android:textColor       ="@android:color/white"
+        android:text            ="3"/>
+
     <!--Close button-->
     <ImageView
         android:id="@+id/close_btn"
-        android:layout_width="26dp"
-        android:layout_height="26dp"
-        android:layout_marginLeft="40dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:src="@drawable/ic_close"
         tools:ignore="ContentDescription"/>
 
