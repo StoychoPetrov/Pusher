@@ -36,6 +36,8 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
 
     private LinearLayoutManager         layoutManager;
 
+    private boolean                     mInitRequest;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +48,6 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
 
         mPreferences    = PreferenceManager.getDefaultSharedPreferences(this);
         setAdapter();
-        getReservations(0);
     }
 
     private void setAdapter(){
@@ -60,7 +61,7 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mReservationsRecyclerView.getContext(), layoutManager.getOrientation());
         mReservationsRecyclerView.addItemDecoration(dividerItemDecoration);
 
-        mAdapter    = new ReservationsAdapter(mReservationsArrayList, this);
+        mAdapter    = new ReservationsAdapter(this, mReservationsArrayList, this);
         mReservationsRecyclerView.setAdapter(mAdapter);
 
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -111,14 +112,42 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
         }
     }
 
+    private void markAsRead(long eventId)  {
+
+        try {
+
+            String body = URLEncoder.encode("api_key", "UTF-8") + "=" + URLEncoder.encode(BuildConfig.API_KEY, "UTF-8")
+                    + "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(mPreferences.getString(Utils.PREFERENCES_USERNAME, ""))
+                    + "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(mPreferences.getString(Utils.PREFERENCES_PASSWORD, ""))
+                    + "&" + URLEncoder.encode("event_id", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(eventId), "UTF-8");
+            ConnectionHttp connectionHttp = new ConnectionHttp(body);
+            connectionHttp.setmListener(this);
+            connectionHttp.execute(BuildConfig.API_URL + "api/mark-event-as-read");
+
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        mInitRequest    =    true;
+        getReservations(0);
+    }
+
     @Override
     public void onAnswerReceived(String answer) {
 
         try {
             JSONArray jsonArray = new JSONArray(answer);
 
-            if(findViewById(R.id.bottom_layout).getVisibility() == View.GONE)
+            if(mSwipeRefreshLayout.isRefreshing() || mInitRequest)
                 mReservationsArrayList.clear();
+
+            mInitRequest    = false;
 
             for(int i = 0 ; i < jsonArray.length(); i++){
 
@@ -134,6 +163,8 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
                 reservationModel.setmSpecialist(jsonObject.getString(Utils.TAG_SPECIALIST));
                 reservationModel.setmRoom(jsonObject.getString(Utils.TAG_ROOM));
                 reservationModel.setmUrl(jsonObject.getString(Utils.TAG_URL));
+                reservationModel.setmIsRead(jsonObject.getBoolean(Utils.TAG_IS_READ));
+
 
                 mReservationsArrayList.add(reservationModel);
             }
@@ -153,6 +184,11 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
 
     @Override
     public void onItemClicked(int position) {
+
+        if(!mReservationsArrayList.get(position).getmIsRead()){
+            markAsRead(mReservationsArrayList.get(position).getmId());
+        }
+
         Intent intent = new Intent(this, WebViewActivity.class);
         intent.putExtra("url_to_open", mReservationsArrayList.get(position).getmUrl());
         startActivity(intent);

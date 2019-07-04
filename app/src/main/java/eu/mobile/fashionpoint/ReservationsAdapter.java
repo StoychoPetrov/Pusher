@@ -1,5 +1,7 @@
 package eu.mobile.fashionpoint;
 
+import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,16 +15,19 @@ import eu.mobile.fashionpoint.models.ReservationModel;
 
 public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapter.ViewHolder>{
 
+    private Context mContext;
+
     public interface RecyclerListener {
         void onItemClicked(int position);
     }
 
-    private ArrayList<ReservationModel> mReservationsArrayList = new ArrayList<>();
+    private ArrayList<ReservationModel> mReservationsArrayList;
     private RecyclerListener            mListener;
 
-    public ReservationsAdapter(ArrayList<ReservationModel> reservationsArrayList, RecyclerListener listener){
+    public ReservationsAdapter(Context context, ArrayList<ReservationModel> reservationsArrayList, RecyclerListener listener){
         mReservationsArrayList  = reservationsArrayList;
         mListener               = listener;
+        mContext                = context;
     }
 
     @Override
@@ -69,6 +74,23 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
             viewHolder.mRoomTxt.setVisibility(View.GONE);
 
         viewHolder.mRoomTxt.setText(reservationModel.getmRoom());
+
+        if(!reservationModel.getmIsRead()){
+            viewHolder.mClientTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
+            viewHolder.mServiceTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
+            viewHolder.mSpecialistTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
+            viewHolder.mRoomTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
+            viewHolder.mDateTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
+            viewHolder.mDurationTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
+        }
+        else {
+            viewHolder.mClientTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
+            viewHolder.mServiceTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
+            viewHolder.mSpecialistTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
+            viewHolder.mRoomTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
+            viewHolder.mDateTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
+            viewHolder.mDurationTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
+        }
 
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

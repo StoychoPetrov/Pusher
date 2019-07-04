@@ -5,12 +5,14 @@ import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class ChatHeadService extends Service {
 
@@ -58,6 +60,16 @@ public class ChatHeadService extends Service {
         //Add the view to the window
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(mChatHeadView, params);
+
+        TextView count = mChatHeadView.findViewById(R.id.countTxt);
+
+        int unreadCount = PreferenceManager.getDefaultSharedPreferences(this).getInt("unread_count", 0);
+        if(unreadCount == 0)
+            count.setVisibility(View.GONE);
+        else {
+            count.setVisibility(View.VISIBLE);
+            count.setText(String.valueOf(unreadCount));
+        }
 
         //Set the close button.
         ImageView closeButton = (ImageView) mChatHeadView.findViewById(R.id.close_btn);

@@ -12,6 +12,7 @@ public class ReservationModel {
     private String  mSpecialist;
     private String  mRoom;
     private String  mUrl;
+    private Boolean mIsRead;
 
     public ReservationModel(){}
 
@@ -77,5 +78,13 @@ public class ReservationModel {
 
     public void setmUrl(String mUrl) {
         this.mUrl = mUrl;
+    }
+
+    public Boolean getmIsRead() {
+        return mIsRead;
+    }
+
+    public void setmIsRead(Boolean mIsRead) {
+        this.mIsRead = mIsRead;
     }
 }

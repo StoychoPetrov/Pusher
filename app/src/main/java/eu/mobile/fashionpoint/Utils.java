@@ -26,6 +26,7 @@ public class Utils {
     public static final String  TAG_SPECIALIST                      = "specialist";
     public static final String  TAG_ROOM                            = "room";
     public static final String  TAG_URL                             = "url";
+    public static final String  TAG_IS_READ                         = "is_read";
 
     public static Date parseDate(String date){
         try {

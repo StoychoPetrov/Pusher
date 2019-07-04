@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
@@ -54,6 +55,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
     private Handler                 mHandler;
     private Runnable                mRunnable;
 
+    private Intent                 mChatHeadServiceIntent;
+
     private boolean                 mUrlFromNotLoaded;
 
     @Override
@@ -71,6 +74,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             mExitFab            = (FloatingActionButton)    findViewById(R.id.exit_icon);
 
             mExitFab.setOnClickListener(this);
+
+            mChatHeadServiceIntent = new Intent(WebViewActivity.this, ChatHeadService.class);
 
             setListeners();
             createChannel();
@@ -95,7 +100,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                loadUrl();
+                mWebView.reload();
             }
         });
     }
@@ -117,7 +122,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void initializeView() {
-        startService(new Intent(WebViewActivity.this, ChatHeadService.class));
+        startService(mChatHeadServiceIntent);
     }
 
     private void createChannel(){
@@ -265,6 +270,12 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 wakeUp();
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
                 createNotification(notification, remoteMessage.getData().get("url_to_open"));
+
+                PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this).edit()
+                        .putInt("unread_count", PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this).getInt("unread_count", 0)).apply();
+
+                stopService(new Intent(WebViewActivity.this, ChatHeadService.class));
+                startService(new Intent(WebViewActivity.this, ChatHeadService.class));
 
                 Log.d("background_notification", "receive");
             }
