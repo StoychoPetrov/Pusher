@@ -16,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
@@ -48,6 +47,9 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
 
         mPreferences    = PreferenceManager.getDefaultSharedPreferences(this);
         setAdapter();
+
+        mInitRequest    =    true;
+        getReservations(0);
     }
 
     private void setAdapter(){
@@ -129,15 +131,6 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
         }
     }
 
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        mInitRequest    =    true;
-        getReservations(0);
-    }
-
     @Override
     public void onAnswerReceived(String answer) {
 
@@ -184,6 +177,14 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
 
     @Override
     public void onItemClicked(int position) {
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ReservationsActivity.this);
+        SharedPreferences.Editor editor     = sharedPreferences.edit();
+        if(sharedPreferences.getInt("unread_count", 0) > 0)
+            editor.putInt("unread_count", sharedPreferences.getInt("unread_count", 0) - 1).apply();
+
+        mReservationsArrayList.get(position).setmIsRead(true);
+        mAdapter.notifyDataSetChanged();
 
         if(!mReservationsArrayList.get(position).getmIsRead()){
             markAsRead(mReservationsArrayList.get(position).getmId());

@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.view.Gravity;
@@ -61,15 +62,8 @@ public class ChatHeadService extends Service {
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(mChatHeadView, params);
 
-        TextView count = mChatHeadView.findViewById(R.id.countTxt);
-
-        int unreadCount = PreferenceManager.getDefaultSharedPreferences(this).getInt("unread_count", 0);
-        if(unreadCount == 0)
-            count.setVisibility(View.GONE);
-        else {
-            count.setVisibility(View.VISIBLE);
-            count.setText(String.valueOf(unreadCount));
-        }
+        setData();
+        startThread();
 
         //Set the close button.
         ImageView closeButton = (ImageView) mChatHeadView.findViewById(R.id.close_btn);
@@ -144,12 +138,35 @@ public class ChatHeadService extends Service {
             }
         });
     }
+
+    private void setData(){
+        TextView count = mChatHeadView.findViewById(R.id.countTxt);
+
+        int unreadCount = PreferenceManager.getDefaultSharedPreferences(this).getInt("unread_count", 0);
+        if(unreadCount == 0)
+            count.setVisibility(View.GONE);
+        else {
+            count.setVisibility(View.VISIBLE);
+            count.setText(String.valueOf(unreadCount));
+        }
+    }
 //
 //    private boolean isAClick(float startX, float endX, float startY, float endY) {
 //        float differenceX = Math.abs(startX - endX);
 //        float differenceY = Math.abs(startY - endY);
 //        return !(differenceX > CLICK_ACTION_THRESHOLD/* =5 */ || differenceY > CLICK_ACTION_THRESHOLD);
 //    }
+
+    private void startThread(){
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                setData();
+                startThread();
+            }
+        }, 3000);
+    }
 
     @Override
     public void onDestroy() {

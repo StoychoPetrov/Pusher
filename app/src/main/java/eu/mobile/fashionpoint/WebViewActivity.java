@@ -271,8 +271,9 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
                 createNotification(notification, remoteMessage.getData().get("url_to_open"));
 
-                PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this).edit()
-                        .putInt("unread_count", PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this).getInt("unread_count", 0)).apply();
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this);
+                SharedPreferences.Editor editor     = sharedPreferences.edit();
+                editor.putInt("unread_count", sharedPreferences.getInt("unread_count", 0) + 1).apply();
 
                 stopService(new Intent(WebViewActivity.this, ChatHeadService.class));
                 startService(new Intent(WebViewActivity.this, ChatHeadService.class));
