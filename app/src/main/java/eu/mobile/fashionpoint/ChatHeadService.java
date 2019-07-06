@@ -2,6 +2,7 @@ package eu.mobile.fashionpoint;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Handler;
@@ -15,7 +16,15 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class ChatHeadService extends Service {
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URLEncoder;
+
+import eu.mobile.fashionpoint.models.ReservationModel;
+
+public class ChatHeadService extends Service implements ConnectionHttp.OnAnswerReceived {
 
     private WindowManager mWindowManager;
     private View mChatHeadView;
@@ -62,7 +71,6 @@ public class ChatHeadService extends Service {
         mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mWindowManager.addView(mChatHeadView, params);
 
-        setData();
         startThread();
 
         //Set the close button.
@@ -139,30 +147,48 @@ public class ChatHeadService extends Service {
         });
     }
 
-    private void setData(){
+    private void setData(int notRead){
+
         TextView count = mChatHeadView.findViewById(R.id.countTxt);
 
-        int unreadCount = PreferenceManager.getDefaultSharedPreferences(this).getInt("unread_count", 0);
-        if(unreadCount == 0)
+//        int notRead = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getInt("not_read", 0);
+
+        if(notRead == 0)
             count.setVisibility(View.GONE);
         else {
             count.setVisibility(View.VISIBLE);
-            count.setText(String.valueOf(unreadCount));
+            count.setText(String.valueOf(notRead));
         }
     }
-//
-//    private boolean isAClick(float startX, float endX, float startY, float endY) {
-//        float differenceX = Math.abs(startX - endX);
-//        float differenceY = Math.abs(startY - endY);
-//        return !(differenceX > CLICK_ACTION_THRESHOLD/* =5 */ || differenceY > CLICK_ACTION_THRESHOLD);
-//    }
+
+    private void getReservations(int offset)  {
+
+        try {
+
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+            String body = URLEncoder.encode("api_key", "UTF-8") + "=" + URLEncoder.encode(BuildConfig.API_KEY, "UTF-8")
+                    + "&" + URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(sharedPreferences.getString(Utils.PREFERENCES_USERNAME, ""))
+                    + "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(sharedPreferences.getString(Utils.PREFERENCES_PASSWORD, ""))
+                    + "&" + URLEncoder.encode("offset", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(offset), "UTF-8")
+                    + "&" + URLEncoder.encode("limit", "UTF-8") + "=" + URLEncoder.encode(String.valueOf(100), "UTF-8");
+
+            ConnectionHttp connectionHttp = new ConnectionHttp(body);
+            connectionHttp.setmListener(this);
+            connectionHttp.execute(BuildConfig.API_URL + "api/future-reservations");
+
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+    }
+
 
     private void startThread(){
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                setData();
+                getReservations(0);
                 startThread();
             }
         }, 3000);
@@ -172,5 +198,32 @@ public class ChatHeadService extends Service {
     public void onDestroy() {
         super.onDestroy();
         if (mChatHeadView != null) mWindowManager.removeView(mChatHeadView);
+    }
+
+    @Override
+    public void onAnswerReceived(String answer) {
+        try {
+            JSONArray jsonArray = new JSONArray(answer);
+
+            int notRead = 0;
+
+            for(int i = 0 ; i < jsonArray.length(); i++){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                if(!jsonObject.getBoolean(Utils.TAG_IS_READ)){
+                    notRead++;
+                }
+            }
+
+            setData(notRead);
+
+//            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+//            SharedPreferences.Editor editor = preferences.edit();
+//
+//            editor.putInt("not_read", notRead);
+//            editor.apply();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

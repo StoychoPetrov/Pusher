@@ -1,13 +1,14 @@
 package eu.mobile.fashionpoint;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.AudioAttributes;
@@ -19,6 +20,7 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -64,6 +66,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_view);
 
+        requestPermissions();
+
         if(isTablet()){
             setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }
@@ -103,6 +107,31 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 mWebView.reload();
             }
         });
+    }
+
+    private void requestPermissions() {
+// Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_PHONE_STATE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_PHONE_STATE)) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 0);
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+            } else {
+                // No explanation needed; request the permission
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, 0);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
     }
 
     private boolean isTablet() {
@@ -270,10 +299,6 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 wakeUp();
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
                 createNotification(notification, remoteMessage.getData().get("url_to_open"));
-
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(WebViewActivity.this);
-                SharedPreferences.Editor editor     = sharedPreferences.edit();
-                editor.putInt("unread_count", sharedPreferences.getInt("unread_count", 0) + 1).apply();
 
                 stopService(new Intent(WebViewActivity.this, ChatHeadService.class));
                 startService(new Intent(WebViewActivity.this, ChatHeadService.class));

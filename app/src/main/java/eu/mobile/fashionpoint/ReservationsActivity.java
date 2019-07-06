@@ -178,17 +178,12 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
     @Override
     public void onItemClicked(int position) {
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(ReservationsActivity.this);
-        SharedPreferences.Editor editor     = sharedPreferences.edit();
-        if(sharedPreferences.getInt("unread_count", 0) > 0)
-            editor.putInt("unread_count", sharedPreferences.getInt("unread_count", 0) - 1).apply();
-
         mReservationsArrayList.get(position).setmIsRead(true);
         mAdapter.notifyDataSetChanged();
 
-        if(!mReservationsArrayList.get(position).getmIsRead()){
+//        if(!mReservationsArrayList.get(position).getmIsRead()){
             markAsRead(mReservationsArrayList.get(position).getmId());
-        }
+//        }
 
         Intent intent = new Intent(this, WebViewActivity.class);
         intent.putExtra("url_to_open", mReservationsArrayList.get(position).getmUrl());
