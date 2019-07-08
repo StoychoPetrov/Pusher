@@ -46,7 +46,9 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
         viewHolder.mServiceTxt.setText(reservationModel.getmService());
         viewHolder.mSpecialistTxt.setText(reservationModel.getmSpecialist());
 
-        viewHolder.mDateTxt.setText(Utils.formatHour(reservationModel.getmStartDate()) + "-" + Utils.formatHour(reservationModel.getmEndDate()));
+        viewHolder.mTimeTxt.setText(Utils.formatHour(reservationModel.getmStartDate()) + "-" + Utils.formatHour(reservationModel.getmEndDate()));
+
+        viewHolder.mDateTxt.setText(Utils.formatDate(reservationModel.getmStartDate()));
 
         Date date1 = Utils.parseTime(Utils.formatHour(reservationModel.getmEndDate()));
         Date date2 = Utils.parseTime(Utils.formatHour(reservationModel.getmStartDate()));
@@ -76,19 +78,21 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
         viewHolder.mRoomTxt.setText(reservationModel.getmRoom());
 
         if(!reservationModel.getmIsRead()){
+            viewHolder.mDateTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
             viewHolder.mClientTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
             viewHolder.mServiceTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
             viewHolder.mSpecialistTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
             viewHolder.mRoomTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
-            viewHolder.mDateTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
+            viewHolder.mTimeTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
             viewHolder.mDurationTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
         }
         else {
+            viewHolder.mDateTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
             viewHolder.mClientTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
             viewHolder.mServiceTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
             viewHolder.mSpecialistTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
             viewHolder.mRoomTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
-            viewHolder.mDateTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
+            viewHolder.mTimeTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
             viewHolder.mDurationTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.darker_gray));
         }
 
@@ -113,6 +117,7 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
         public TextView mSpecialistTxt;
         public TextView mRoomTxt;
 
+        public TextView mTimeTxt;
         public TextView mDateTxt;
         public TextView mDurationTxt;
 
@@ -124,6 +129,7 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
             mSpecialistTxt  = v.findViewById(R.id.specialist_txt);
             mRoomTxt        = v.findViewById(R.id.room_txt);
             mDateTxt        = v.findViewById(R.id.date_txt);
+            mTimeTxt        = v.findViewById(R.id.time_txt);
             mDurationTxt    = v.findViewById(R.id.duration_txt);
         }
     }

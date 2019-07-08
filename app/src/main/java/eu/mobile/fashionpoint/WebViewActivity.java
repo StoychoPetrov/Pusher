@@ -121,7 +121,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                     Manifest.permission.READ_PHONE_STATE)) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 0);
                 // Show an explanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
+                // this thread waitinиg for the user's response! After the user
                 // sees the explanation, try again to request the permission.
             } else {
                 // No explanation needed; request the permission
@@ -300,8 +300,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 RemoteMessage.Notification notification = remoteMessage.getNotification();
                 createNotification(notification, remoteMessage.getData().get("url_to_open"));
 
-                stopService(new Intent(WebViewActivity.this, ChatHeadService.class));
-                startService(new Intent(WebViewActivity.this, ChatHeadService.class));
+//                stopService(new Intent(WebViewActivity.this, ChatHeadService.class));
 
                 Log.d("background_notification", "receive");
             }

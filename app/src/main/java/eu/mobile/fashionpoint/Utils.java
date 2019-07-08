@@ -39,6 +39,11 @@ public class Utils {
         return null;
     }
 
+    public static String formatDate(Date date){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+        return simpleDateFormat.format(date);
+    }
+
     public static String formatHour(Date date){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
         return simpleDateFormat.format(date);
