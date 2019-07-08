@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -68,6 +69,15 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
                 viewHolder.mDurationTxt.setText(hours+ " ч. " + mins + " мин.");
             else
                 viewHolder.mDurationTxt.setText(mins + " мин.");
+
+            int totalMins = mins + hours * 60;
+
+            int percentage  = (int) (totalMins / 12f * 10f);
+
+            if(percentage < 100)
+                viewHolder.mProgress.setProgress(percentage);
+            else
+                viewHolder.mProgress.setProgress(100);
         }
 
         if(!reservationModel.getmRoom().isEmpty())
@@ -116,6 +126,7 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
         public TextView mServiceTxt;
         public TextView mSpecialistTxt;
         public TextView mRoomTxt;
+        public ProgressBar mProgress;
 
         public TextView mTimeTxt;
         public TextView mDateTxt;
@@ -131,6 +142,7 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
             mDateTxt        = v.findViewById(R.id.date_txt);
             mTimeTxt        = v.findViewById(R.id.time_txt);
             mDurationTxt    = v.findViewById(R.id.duration_txt);
+            mProgress       = v.findViewById(R.id.progress);
         }
     }
 }
