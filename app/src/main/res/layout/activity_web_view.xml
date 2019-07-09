@@ -6,11 +6,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="eu.mobile.fashionpoint.WebViewActivity">
 
-    <android.support.v4.widget.SwipeRefreshLayout
-        android:id              ="@+id/swipe_refresh"
-        android:layout_width    ="match_parent"
-        android:layout_height   ="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    <!--<android.support.v4.widget.SwipeRefreshLayout-->
+        <!--android:id              ="@+id/swipe_refresh"-->
+        <!--android:layout_width    ="match_parent"-->
+        <!--android:layout_height   ="match_parent"-->
+        <!--app:layout_behavior="@string/appbar_scrolling_view_behavior">-->
 
 
         <RelativeLayout
@@ -29,17 +29,7 @@
 
         </RelativeLayout>
 
-    </android.support.v4.widget.SwipeRefreshLayout>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id                      ="@+id/exit_icon"
-        android:layout_width            ="wrap_content"
-        android:layout_height           ="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight ="true"
-        android:layout_margin           ="15dp"
-        android:src                     ="@drawable/ic_exit"
-        app:fabSize                     ="auto" />
+    <!--</android.support.v4.widget.SwipeRefreshLayout>-->
 
     <RelativeLayout
         android:id              ="@+id/progress_layout"

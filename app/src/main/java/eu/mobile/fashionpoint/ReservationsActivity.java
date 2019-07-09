@@ -2,6 +2,7 @@ package eu.mobile.fashionpoint;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 import org.json.JSONArray;
@@ -37,6 +39,9 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
 
     private boolean                     mInitRequest;
 
+    private SwipeController             mSwipeController        = null;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +52,7 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
 
         mPreferences    = PreferenceManager.getDefaultSharedPreferences(this);
         setAdapter();
+        setupRecyclerView();
 
         mInitRequest    =    true;
         getReservations(0);
@@ -157,7 +163,7 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
                 reservationModel.setmRoom(jsonObject.getString(Utils.TAG_ROOM));
                 reservationModel.setmUrl(jsonObject.getString(Utils.TAG_URL));
                 reservationModel.setmIsRead(jsonObject.getBoolean(Utils.TAG_IS_READ));
-
+                reservationModel.setmColor(jsonObject.getString(Utils.TAG_COLOR));
 
                 mReservationsArrayList.add(reservationModel);
             }
@@ -173,6 +179,30 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void setupRecyclerView() {
+        mReservationsRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        mReservationsRecyclerView.setAdapter(mAdapter);
+
+        mSwipeController = new SwipeController(new SwipeControllerActions() {
+            @Override
+            public void onRightClicked(int position) {
+//                mAdapter.players.remove(position);
+//                mAdapter.notifyItemRemoved(position);
+//                mAdapter.notifyItemRangeChanged(position, mAdapter.getItemCount());
+            }
+        });
+
+        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(mSwipeController);
+        itemTouchhelper.attachToRecyclerView(mReservationsRecyclerView);
+
+        mReservationsRecyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+                mSwipeController.onDraw(c);
+            }
+        });
     }
 
     @Override

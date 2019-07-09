@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ShortcutManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
@@ -44,6 +45,20 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if(getIntent() != null && getIntent().getAction() != null
+                && getIntent().getAction().equalsIgnoreCase("LOG_OUT")) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
+                    ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+                    if (shortcutManager != null) {
+                        shortcutManager.removeAllDynamicShortcuts();
+                    }
+                }
+            }
+
+            logOut();
+        }
+
         initUI();
         setListerners();
 
@@ -72,6 +87,18 @@ public class MainActivity extends AppCompatActivity implements ConnectionHttp.On
         mPasswordEdt        = (EditText)    findViewById(R.id.password_edt);
 
         mSharedPreferences  = PreferenceManager.getDefaultSharedPreferences(this);
+    }
+
+    private void logOut(){
+        SharedPreferences           sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor    editor            = sharedPreferences.edit();
+
+        PushNotifications.start(getApplicationContext(), "f1373bb0-1b5f-4939-8a25-5d730bd0037a");
+        PushNotifications.unsubscribe("mobile_" + sharedPreferences.getInt("user_id", -1));
+
+        editor.putInt("user_id", -1);
+
+        editor.apply();
     }
 
     private void setListerners(){

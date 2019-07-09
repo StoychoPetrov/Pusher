@@ -12,6 +12,7 @@ public class ReservationModel {
     private String  mSpecialist;
     private String  mRoom;
     private String  mUrl;
+    private String  mColor;
     private Boolean mIsRead;
 
     public ReservationModel(){}
@@ -86,5 +87,13 @@ public class ReservationModel {
 
     public void setmIsRead(Boolean mIsRead) {
         this.mIsRead = mIsRead;
+    }
+
+    public String getmColor() {
+        return mColor;
+    }
+
+    public void setmColor(String mColor) {
+        this.mColor = mColor;
     }
 }

@@ -14,7 +14,10 @@
         <android.support.v7.widget.RecyclerView
             android:id              ="@+id/reservations_recycler_view"
             android:layout_width    ="match_parent"
-            android:layout_height   ="match_parent"/>
+            android:layout_height   ="wrap_content"
+            android:orientation     ="horizontal"
+            android:clipToPadding   ="false"
+            android:overScrollMode  ="never"/>
 
     </android.support.v4.widget.SwipeRefreshLayout>
 

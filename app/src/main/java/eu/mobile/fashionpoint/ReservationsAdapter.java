@@ -1,6 +1,7 @@
 package eu.mobile.fashionpoint;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -87,6 +88,10 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
 
         viewHolder.mRoomTxt.setText(reservationModel.getmRoom());
 
+        viewHolder.mProgress.getProgressDrawable().setColorFilter(Color.parseColor(reservationModel.getmColor()), android.graphics.PorterDuff.Mode.MULTIPLY);
+
+        viewHolder.mDivider.setBackgroundColor(Color.parseColor(reservationModel.getmColor()));
+
         if(!reservationModel.getmIsRead()){
             viewHolder.mDateTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
             viewHolder.mClientTxt.setTextColor(ContextCompat.getColor(mContext, android.R.color.black));
@@ -131,6 +136,7 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
         public TextView mTimeTxt;
         public TextView mDateTxt;
         public TextView mDurationTxt;
+        public View     mDivider;
 
         public ViewHolder(View v) {
             super(v);
@@ -143,6 +149,7 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
             mTimeTxt        = v.findViewById(R.id.time_txt);
             mDurationTxt    = v.findViewById(R.id.duration_txt);
             mProgress       = v.findViewById(R.id.progress);
+            mDivider        = v.findViewById(R.id.divider);
         }
     }
 }

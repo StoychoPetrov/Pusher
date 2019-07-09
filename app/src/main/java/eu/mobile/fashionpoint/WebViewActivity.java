@@ -1,6 +1,7 @@
 package eu.mobile.fashionpoint;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,8 +10,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Icon;
 import android.media.AudioAttributes;
 import android.net.Uri;
 import android.net.http.SslError;
@@ -19,6 +23,7 @@ import android.os.Handler;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
@@ -42,14 +47,15 @@ import com.pusher.pushnotifications.PushNotifications;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.Collections;
 
 
-public class WebViewActivity extends AppCompatActivity implements View.OnClickListener{
+public class WebViewActivity extends AppCompatActivity{
 
     private static final int CODE_DRAW_OVER_OTHER_APP_PERMISSION = 2084;
 
     private WebView                 mWebView;
-    private FloatingActionButton    mExitFab;
     private SwipeRefreshLayout      mSwipeRefreshLayout;
 
     private ViewTreeObserver.OnScrollChangedListener mOnScrollChangedListener;
@@ -73,11 +79,8 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         }
 
         if(getIntent() != null) {
-            mSwipeRefreshLayout = findViewById(R.id.swipe_refresh);
+//            mSwipeRefreshLayout = findViewById(R.id.swipe_refresh);
             mWebView            = (WebView)                 findViewById(R.id.webview);
-            mExitFab            = (FloatingActionButton)    findViewById(R.id.exit_icon);
-
-            mExitFab.setOnClickListener(this);
 
             mChatHeadServiceIntent = new Intent(WebViewActivity.this, ChatHeadService.class);
 
@@ -94,19 +97,39 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
                 startActivityForResult(intent, CODE_DRAW_OVER_OTHER_APP_PERMISSION);
-            } else {
-                initializeView();
             }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            createShortcuts();
         }
     }
 
     private void setListeners(){
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                mWebView.reload();
-            }
-        });
+//        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+//            @Override
+//            public void onRefresh() {
+//                mWebView.reload();
+//            }
+//        });
+    }
+
+    @TargetApi(Build.VERSION_CODES.N_MR1)
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void createShortcuts(){
+        ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setAction("LOG_OUT");
+
+        ShortcutInfo shortcut = new ShortcutInfo.Builder(this, "id1")
+                .setShortLabel("Log out")
+                .setIcon(Icon.createWithResource(this, R.drawable.ic_exit))
+                .setIntent(intent)
+                .build();
+
+        if (shortcutManager != null) {
+            shortcutManager.setDynamicShortcuts(Collections.singletonList(shortcut));
+        }
     }
 
     private void requestPermissions() {
@@ -148,10 +171,6 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
             return false;
         }
 
-    }
-
-    private void initializeView() {
-        startService(mChatHeadServiceIntent);
     }
 
     private void createChannel(){
@@ -212,7 +231,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
                     mUrlFromNotLoaded = true;
                 }
 
-                mSwipeRefreshLayout.setRefreshing(false);
+//                mSwipeRefreshLayout.setRefreshing(false);
 
 //                if(mHandler != null && mRunnable != null)
 //                    mHandler.removeCallbacks(mRunnable);
@@ -233,7 +252,7 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
 
                 Log.d("onPageStarted", url);
 
-                if(!mSwipeRefreshLayout.isRefreshing())
+//                if(!mSwipeRefreshLayout.isRefreshing())
                     findViewById(R.id.progress_layout).setVisibility(View.VISIBLE);
             }
 
@@ -273,23 +292,23 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
     protected void onStart() {
         super.onStart();
 
-        mSwipeRefreshLayout.getViewTreeObserver().addOnScrollChangedListener(mOnScrollChangedListener =
-                new ViewTreeObserver.OnScrollChangedListener() {
-                    @Override
-                    public void onScrollChanged() {
-                        if (mWebView.getScrollY() == 0)
-                            mSwipeRefreshLayout.setEnabled(true);
-                        else
-                            mSwipeRefreshLayout.setEnabled(false);
-                    }
-                });
+//        mSwipeRefreshLayout.getViewTreeObserver().addOnScrollChangedListener(mOnScrollChangedListener =
+//                new ViewTreeObserver.OnScrollChangedListener() {
+//                    @Override
+//                    public void onScrollChanged() {
+//                        if (mWebView.getScrollY() == 0)
+//                            mSwipeRefreshLayout.setEnabled(true);
+//                        else
+//                            mSwipeRefreshLayout.setEnabled(false);
+//                    }
+//                });
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        mSwipeRefreshLayout.getViewTreeObserver().removeOnScrollChangedListener(mOnScrollChangedListener);
+//        mSwipeRefreshLayout.getViewTreeObserver().removeOnScrollChangedListener(mOnScrollChangedListener);
     }
 
     private void receivedMessageListener(){
@@ -373,44 +392,6 @@ public class WebViewActivity extends AppCompatActivity implements View.OnClickLi
         }
 
         return postRequest;
-    }
-
-    @Override
-    public void onClick(View view) {
-        if(view.getId() == mExitFab.getId()){
-            SharedPreferences           sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor    editor            = sharedPreferences.edit();
-
-            PushNotifications.start(getApplicationContext(), "f1373bb0-1b5f-4939-8a25-5d730bd0037a");
-            PushNotifications.unsubscribe("mobile_" + sharedPreferences.getInt("user_id", -1));
-
-            editor.putInt("user_id", -1);
-
-            editor.apply();
-
-            Intent intent = new Intent(this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CODE_DRAW_OVER_OTHER_APP_PERMISSION) {
-
-            //Check if the permission is granted or not.
-            if (resultCode == RESULT_OK) {
-                initializeView();
-            } else { //Permission is not available
-                Toast.makeText(this,
-                        "Draw over other app permission not available. Closing the application",
-                        Toast.LENGTH_SHORT).show();
-
-                finish();
-            }
-        } else {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
     }
 
     class MyJavaScriptInterface {
