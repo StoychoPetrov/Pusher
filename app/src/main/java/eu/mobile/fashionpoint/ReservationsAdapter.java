@@ -7,6 +7,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -21,6 +23,8 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
 
     public interface RecyclerListener {
         void onItemClicked(int position);
+        void onViewClicked(int position);
+        void onOkClicked(int position);
     }
 
     private ArrayList<ReservationModel> mReservationsArrayList;
@@ -40,7 +44,7 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int i) {
+    public void onBindViewHolder(final ViewHolder viewHolder, final int i) {
 
         ReservationModel reservationModel = mReservationsArrayList.get(i);
 
@@ -118,6 +122,22 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
                     mListener.onItemClicked(i);
             }
         });
+
+        viewHolder.mViewBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((SwipeRevealLayout) viewHolder.itemView).close(true);
+                mListener.onViewClicked(i);
+            }
+        });
+
+        viewHolder.mOkBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((SwipeRevealLayout) viewHolder.itemView).close(true);
+                mListener.onOkClicked(i);
+            }
+        });
     }
 
     @Override
@@ -138,6 +158,9 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
         public TextView mDurationTxt;
         public View     mDivider;
 
+        public TextView mOkBtn;
+        public TextView   mViewBtn;
+
         public ViewHolder(View v) {
             super(v);
 
@@ -150,6 +173,9 @@ public class ReservationsAdapter extends RecyclerView.Adapter<ReservationsAdapte
             mDurationTxt    = v.findViewById(R.id.duration_txt);
             mProgress       = v.findViewById(R.id.progress);
             mDivider        = v.findViewById(R.id.divider);
+
+            mOkBtn          = v.findViewById(R.id.ok_btn);
+            mViewBtn        = v.findViewById(R.id.view_btn);
         }
     }
 }

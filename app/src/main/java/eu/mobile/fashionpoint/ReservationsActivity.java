@@ -52,7 +52,7 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
 
         mPreferences    = PreferenceManager.getDefaultSharedPreferences(this);
         setAdapter();
-        setupRecyclerView();
+//        setupRecyclerView();
 
         mInitRequest    =    true;
         getReservations(0);
@@ -66,8 +66,8 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
         layoutManager = new LinearLayoutManager(this);
         mReservationsRecyclerView.setLayoutManager(layoutManager);
 
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mReservationsRecyclerView.getContext(), layoutManager.getOrientation());
-        mReservationsRecyclerView.addItemDecoration(dividerItemDecoration);
+//        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mReservationsRecyclerView.getContext(), layoutManager.getOrientation());
+//        mReservationsRecyclerView.addItemDecoration(dividerItemDecoration);
 
         mAdapter    = new ReservationsAdapter(this, mReservationsArrayList, this);
         mReservationsRecyclerView.setAdapter(mAdapter);
@@ -200,23 +200,38 @@ public class ReservationsActivity extends AppCompatActivity implements Connectio
         mReservationsRecyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
             @Override
             public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
-                mSwipeController.onDraw(c);
+//                mSwipeController.onDraw(c);
             }
         });
     }
 
-    @Override
-    public void onItemClicked(int position) {
-
+    private void itemClicked(int position){
         mReservationsArrayList.get(position).setmIsRead(true);
         mAdapter.notifyDataSetChanged();
 
 //        if(!mReservationsArrayList.get(position).getmIsRead()){
-            markAsRead(mReservationsArrayList.get(position).getmId());
+        markAsRead(mReservationsArrayList.get(position).getmId());
 //        }
 
         Intent intent = new Intent(this, WebViewActivity.class);
         intent.putExtra("url_to_open", mReservationsArrayList.get(position).getmUrl());
         startActivity(intent);
+    }
+
+    @Override
+    public void onItemClicked(int position) {
+        itemClicked(position);
+    }
+
+    @Override
+    public void onViewClicked(int position) {
+        itemClicked(position);
+    }
+
+    @Override
+    public void onOkClicked(int position) {
+        markAsRead(mReservationsArrayList.get(position).getmId());
+        mReservationsArrayList.get(position).setmIsRead(true);
+        mAdapter.notifyDataSetChanged();
     }
 }
